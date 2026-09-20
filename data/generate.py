@@ -21,6 +21,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from data.defects import DEFECT_RATE, EXPECTED_CHECK, plant
+from data.documents import emit
 from data.invoices import generate_invoices
 from data.records import (
     N_PURCHASE_ORDERS,
@@ -69,13 +70,23 @@ def build(seed: int) -> dict:
     }
 
 
-def main(seed: int) -> None:
+def main(seed: int, *, with_documents: bool = True) -> None:
     corpus = build(seed)
+    # Documents are emitted from their own generator stream, so adding or
+    # removing a rendering step cannot shift the records or the ground truth.
+    manifest = (
+        emit(random.Random(seed + 1), corpus["vendors"], corpus["invoices"])
+        if with_documents
+        else []
+    )
 
     _write(CORPUS_DIR / "vendors.json", [asdict(v) for v in corpus["vendors"]])
     _write(CORPUS_DIR / "purchase_orders.json", [asdict(o) for o in corpus["orders"]])
     _write(CORPUS_DIR / "deliveries.json", [asdict(d) for d in corpus["deliveries"]])
     _write(CORPUS_DIR / "invoices.json", [asdict(i) for i in corpus["invoices"]])
+
+    if manifest:
+        _write(CORPUS_DIR / "documents.json", manifest)
 
     _write(GROUND_TRUTH_DIR / "exceptions.json", corpus["truth"])
     _write(
@@ -106,6 +117,7 @@ def main(seed: int) -> None:
         "deliveries": len(corpus["deliveries"]),
         "invoices": len(corpus["invoices"]),
         "defects": len(corpus["truth"]),
+        "documents": len(manifest),
     }
     for label, value in counts.items():
         print(f"{label:>16}: {value}")
