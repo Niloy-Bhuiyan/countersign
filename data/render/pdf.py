@@ -7,15 +7,14 @@ and varied enough between layouts that a parser cannot hard-code them.
 
 from __future__ import annotations
 
-from decimal import Decimal
 from pathlib import Path
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas as pdfcanvas
 
-from countersign.money import tax_of
 from data.invoices import Invoice
+from data.records import Vendor
 from data.render.layouts import (
     Layout,
     format_date,
@@ -23,7 +22,6 @@ from data.render.layouts import (
     format_quantity,
     layout_for_vendor,
 )
-from data.records import Vendor
 
 PAGE_W, PAGE_H = A4
 MARGIN = 18 * mm
@@ -173,8 +171,3 @@ def render(invoice: Invoice, vendor: Vendor, path: Path) -> Path:
     c.showPage()
     c.save()
     return path
-
-
-def expected_tax(invoice: Invoice) -> Decimal:
-    """Tax recomputed from the lines, for the generator's own sanity checks."""
-    return sum((tax_of(line.line_total, line.tax_rate) for line in invoice.lines), Decimal(0))
