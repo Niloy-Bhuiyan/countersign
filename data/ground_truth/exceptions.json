@@ -1,0 +1,812 @@
+[
+  {
+    "invoice_id": "INV-0240",
+    "invoice_number": "BILL 00007/26",
+    "vendor_id": "VEN-014",
+    "po_id": "PO-0228",
+    "defect_code": "TAX_MISMATCH",
+    "expected_check": "TAX_ARITHMETIC",
+    "detail": "tax stated 131006.05 against 159568.88 computed from the lines"
+  },
+  {
+    "invoice_id": "INV-0336",
+    "invoice_number": "MEG-2606-0012",
+    "vendor_id": "VEN-003",
+    "po_id": "PO-0324",
+    "defect_code": "TAX_MISMATCH",
+    "expected_check": "TAX_ARITHMETIC",
+    "detail": "tax stated 435782.10 against 498036.69 computed from the lines"
+  },
+  {
+    "invoice_id": "INV-0168",
+    "invoice_number": "BILL 00004/26",
+    "vendor_id": "VEN-014",
+    "po_id": "PO-0161",
+    "defect_code": "PRICE_ABOVE_PO",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 priced 590.74 against 543.96 ordered"
+  },
+  {
+    "invoice_id": "INV-0468",
+    "invoice_number": "BILL 09503/26",
+    "vendor_id": "VEN-029",
+    "po_id": "PO-0184",
+    "defect_code": "DUPLICATE_NEAR",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "same order and total as BILL 00009/26 under a different number"
+  },
+  {
+    "invoice_id": "INV-0312",
+    "invoice_number": "BILL 00009/25",
+    "vendor_id": "VEN-009",
+    "po_id": "PO-0304",
+    "defect_code": "PRICE_ABOVE_PO",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 priced 81.65 against 73.55 ordered"
+  },
+  {
+    "invoice_id": "INV-0469",
+    "invoice_number": "2026/INV/9005",
+    "vendor_id": "VEN-016",
+    "po_id": "PO-0452",
+    "defect_code": "NO_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed against PO/2026/00452 with no delivery recorded"
+  },
+  {
+    "invoice_id": "INV-0235",
+    "invoice_number": "SHI-2608-0003",
+    "vendor_id": "VEN-028",
+    "po_id": "PO-0224",
+    "defect_code": "TAX_MISMATCH",
+    "expected_check": "TAX_ARITHMETIC",
+    "detail": "tax stated 37670.73 against 56309.01 computed from the lines"
+  },
+  {
+    "invoice_id": "INV-0219",
+    "invoice_number": "INV-2026-00005",
+    "vendor_id": "VEN-020",
+    "po_id": "PO-0208",
+    "defect_code": "PRICE_ABOVE_HISTORY",
+    "expected_check": "PRICE_VARIANCE",
+    "detail": "PKG-PPB-50 ordered and billed at 29.73, against 17.89 on the vendor's prior orders"
+  },
+  {
+    "invoice_id": "INV-0470",
+    "invoice_number": "SHI-2601-0002",
+    "vendor_id": "VEN-023",
+    "po_id": "PO-0092",
+    "defect_code": "DUPLICATE_EXACT",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "resubmits SHI-2601-0002 from 2026-01-11 unchanged"
+  },
+  {
+    "invoice_id": "INV-0467",
+    "invoice_number": "2026/INV/0016",
+    "vendor_id": "VEN-031",
+    "po_id": "PO-0460",
+    "defect_code": "CURRENCY_MISMATCH",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed in USD against BDT on the order"
+  },
+  {
+    "invoice_id": "INV-0471",
+    "invoice_number": "BILL 09510/25",
+    "vendor_id": "VEN-014",
+    "po_id": "PO-0370",
+    "defect_code": "DUPLICATE_NEAR",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "same order and total as BILL 00011/25 under a different number"
+  },
+  {
+    "invoice_id": "INV-0200",
+    "invoice_number": "HAL-2508-0011",
+    "vendor_id": "VEN-008",
+    "po_id": "PO-0191",
+    "defect_code": "QTY_OVER_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 billed 144.94 against 119.00 delivered"
+  },
+  {
+    "invoice_id": "INV-0196",
+    "invoice_number": "INV-2025-00004",
+    "vendor_id": "VEN-020",
+    "po_id": "PO-0187",
+    "defect_code": "TAX_MISMATCH",
+    "expected_check": "TAX_ARITHMETIC",
+    "detail": "tax stated 21.30 against 26.33 computed from the lines"
+  },
+  {
+    "invoice_id": "INV-0472",
+    "invoice_number": "2026/INV/9013",
+    "vendor_id": "VEN-001",
+    "po_id": "PO-0451",
+    "defect_code": "NO_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed against PO/2026/00451 with no delivery recorded"
+  },
+  {
+    "invoice_id": "INV-0473",
+    "invoice_number": "SI009514",
+    "vendor_id": "VEN-012",
+    "po_id": "PO-0192",
+    "defect_code": "DUPLICATE_NEAR",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "same order and total as SI000006 under a different number"
+  },
+  {
+    "invoice_id": "INV-0474",
+    "invoice_number": "BILL 09015/26",
+    "vendor_id": "VEN-004",
+    "po_id": "PO-0438",
+    "defect_code": "NO_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed against PO/2026/00438 with no delivery recorded"
+  },
+  {
+    "invoice_id": "INV-0197",
+    "invoice_number": "BILL 00005/25",
+    "vendor_id": "VEN-019",
+    "po_id": "PO-0188",
+    "defect_code": "PRICE_ABOVE_HISTORY",
+    "expected_check": "PRICE_VARIANCE",
+    "detail": "SVC-HND-LBR ordered and billed at 266.16, against 178.76 on the vendor's prior orders"
+  },
+  {
+    "invoice_id": "INV-0475",
+    "invoice_number": "2026/INV/9517",
+    "vendor_id": "VEN-036",
+    "po_id": "PO-0260",
+    "defect_code": "DUPLICATE_NEAR",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "same order and total as 2026/INV/0010 under a different number"
+  },
+  {
+    "invoice_id": "INV-0106",
+    "invoice_number": "SI000003",
+    "vendor_id": "VEN-017",
+    "po_id": "PO-0107",
+    "defect_code": "CURRENCY_MISMATCH",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed in USD against BDT on the order"
+  },
+  {
+    "invoice_id": "INV-0458",
+    "invoice_number": "INV-2026-00004",
+    "vendor_id": "VEN-035",
+    "po_id": "PO-0449",
+    "defect_code": "PRICE_ABOVE_PO",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 2 priced 608.36 against 534.87 ordered"
+  },
+  {
+    "invoice_id": "INV-0213",
+    "invoice_number": "2025/INV/0006",
+    "vendor_id": "VEN-016",
+    "po_id": "PO-0200",
+    "defect_code": "PRICE_ABOVE_PO",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 2 priced 555.34 against 487.18 ordered"
+  },
+  {
+    "invoice_id": "INV-0418",
+    "invoice_number": "INV-2026-00014",
+    "vendor_id": "VEN-010",
+    "po_id": "PO-0407",
+    "defect_code": "QTY_OVER_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 3 billed 860.30 against 700.00 delivered"
+  },
+  {
+    "invoice_id": "INV-0086",
+    "invoice_number": "TIT-2605-0001",
+    "vendor_id": "VEN-038",
+    "po_id": "PO-0087",
+    "defect_code": "PRICE_ABOVE_HISTORY",
+    "expected_check": "PRICE_VARIANCE",
+    "detail": "PKG-STR-12 ordered and billed at 217.44, against 135.13 on the vendor's prior orders"
+  },
+  {
+    "invoice_id": "INV-0460",
+    "invoice_number": "INV-2026-00013",
+    "vendor_id": "VEN-015",
+    "po_id": "PO-0453",
+    "defect_code": "PRICE_ABOVE_HISTORY",
+    "expected_check": "PRICE_VARIANCE",
+    "detail": "STL-GI-SHEET ordered and billed at 1557.27, against 1057.28 on the vendor's prior orders"
+  },
+  {
+    "invoice_id": "INV-0170",
+    "invoice_number": "BILL 00003/26",
+    "vendor_id": "VEN-039",
+    "po_id": "PO-0163",
+    "defect_code": "QTY_OVER_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 billed 21.35 against 18.00 delivered"
+  },
+  {
+    "invoice_id": "INV-0476",
+    "invoice_number": "INV-2025-09025",
+    "vendor_id": "VEN-040",
+    "po_id": "PO-0426",
+    "defect_code": "NO_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed against PO/2025/00426 with no delivery recorded"
+  },
+  {
+    "invoice_id": "INV-0034",
+    "invoice_number": "INV-2026-00001",
+    "vendor_id": "VEN-005",
+    "po_id": "PO-0036",
+    "defect_code": "QTY_OVER_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 2 billed 1081.49 against 830.00 delivered"
+  },
+  {
+    "invoice_id": "INV-0080",
+    "invoice_number": "INV-2026-00004",
+    "vendor_id": "VEN-015",
+    "po_id": "PO-0080",
+    "defect_code": "CURRENCY_MISMATCH",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed in USD against BDT on the order"
+  },
+  {
+    "invoice_id": "INV-0331",
+    "invoice_number": "2025/INV/0010",
+    "vendor_id": "VEN-031",
+    "po_id": "PO-0321",
+    "defect_code": "PRICE_ABOVE_HISTORY",
+    "expected_check": "PRICE_VARIANCE",
+    "detail": "SVC-FRT-INL ordered and billed at 22025.41, against 14717.95 on the vendor's prior orders"
+  },
+  {
+    "invoice_id": "INV-0282",
+    "invoice_number": "TEE-2601-0004",
+    "vendor_id": "VEN-018",
+    "po_id": "PO-0273",
+    "defect_code": "QTY_OVER_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 2 billed 13.11 against 11.50 delivered"
+  },
+  {
+    "invoice_id": "INV-0477",
+    "invoice_number": "TEE-2510-0002",
+    "vendor_id": "VEN-018",
+    "po_id": "PO-0039",
+    "defect_code": "DUPLICATE_EXACT",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "resubmits TEE-2510-0002 from 2025-10-16 unchanged"
+  },
+  {
+    "invoice_id": "INV-0478",
+    "invoice_number": "SI000003",
+    "vendor_id": "VEN-012",
+    "po_id": "PO-0120",
+    "defect_code": "DUPLICATE_EXACT",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "resubmits SI000003 from 2026-08-20 unchanged"
+  },
+  {
+    "invoice_id": "INV-0479",
+    "invoice_number": "SI009532",
+    "vendor_id": "VEN-037",
+    "po_id": "PO-0382",
+    "defect_code": "DUPLICATE_NEAR",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "same order and total as SI000008 under a different number"
+  },
+  {
+    "invoice_id": "INV-0267",
+    "invoice_number": "INV-2026-00010",
+    "vendor_id": "VEN-010",
+    "po_id": "PO-0258",
+    "defect_code": "PRICE_ABOVE_HISTORY",
+    "expected_check": "PRICE_VARIANCE",
+    "detail": "PKG-SHR-FILM ordered and billed at 467.14, against 246.16 on the vendor's prior orders"
+  },
+  {
+    "invoice_id": "INV-0480",
+    "invoice_number": "SI009534",
+    "vendor_id": "VEN-027",
+    "po_id": "PO-0355",
+    "defect_code": "DUPLICATE_NEAR",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "same order and total as SI000011 under a different number"
+  },
+  {
+    "invoice_id": "INV-0313",
+    "invoice_number": "SI000010",
+    "vendor_id": "VEN-007",
+    "po_id": "PO-0305",
+    "defect_code": "PRICE_ABOVE_PO",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 priced 441.38 against 416.75 ordered"
+  },
+  {
+    "invoice_id": "INV-0224",
+    "invoice_number": "INV-2026-00007",
+    "vendor_id": "VEN-020",
+    "po_id": "PO-0213",
+    "defect_code": "QTY_OVER_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 billed 2318.00 against 1900.00 delivered"
+  },
+  {
+    "invoice_id": "INV-0481",
+    "invoice_number": "2025/INV/9037",
+    "vendor_id": "VEN-001",
+    "po_id": "PO-0395",
+    "defect_code": "NO_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed against PO/2025/00395 with no delivery recorded"
+  },
+  {
+    "invoice_id": "INV-0482",
+    "invoice_number": "BILL 00001/26",
+    "vendor_id": "VEN-034",
+    "po_id": "PO-0003",
+    "defect_code": "DUPLICATE_EXACT",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "resubmits BILL 00001/26 from 2026-01-29 unchanged"
+  },
+  {
+    "invoice_id": "INV-0128",
+    "invoice_number": "MEG-2509-0004",
+    "vendor_id": "VEN-003",
+    "po_id": "PO-0125",
+    "defect_code": "PRICE_ABOVE_PO",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 priced 1177.60 against 1121.10 ordered"
+  },
+  {
+    "invoice_id": "INV-0414",
+    "invoice_number": "2026/INV/0011",
+    "vendor_id": "VEN-006",
+    "po_id": "PO-0403",
+    "defect_code": "CURRENCY_MISMATCH",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed in USD against BDT on the order"
+  },
+  {
+    "invoice_id": "INV-0220",
+    "invoice_number": "SI000009",
+    "vendor_id": "VEN-027",
+    "po_id": "PO-0209",
+    "defect_code": "PRICE_ABOVE_HISTORY",
+    "expected_check": "PRICE_VARIANCE",
+    "detail": "PKG-SHR-FILM ordered and billed at 362.72, against 226.97 on the vendor's prior orders"
+  },
+  {
+    "invoice_id": "INV-0483",
+    "invoice_number": "MEG-2512-9542",
+    "vendor_id": "VEN-003",
+    "po_id": "PO-0300",
+    "defect_code": "DUPLICATE_NEAR",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "same order and total as MEG-2511-0010 under a different number"
+  },
+  {
+    "invoice_id": "INV-0484",
+    "invoice_number": "BILL 09043/26",
+    "vendor_id": "VEN-014",
+    "po_id": "PO-0392",
+    "defect_code": "NO_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed against PO/2026/00392 with no delivery recorded"
+  },
+  {
+    "invoice_id": "INV-0115",
+    "invoice_number": "INV-2025-00007",
+    "vendor_id": "VEN-010",
+    "po_id": "PO-0114",
+    "defect_code": "CURRENCY_MISMATCH",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed in USD against BDT on the order"
+  },
+  {
+    "invoice_id": "INV-0399",
+    "invoice_number": "BILL 00012/26",
+    "vendor_id": "VEN-009",
+    "po_id": "PO-0387",
+    "defect_code": "PRICE_ABOVE_HISTORY",
+    "expected_check": "PRICE_VARIANCE",
+    "detail": "JUT-HES-BTC ordered and billed at 112.36, against 75.70 on the vendor's prior orders"
+  },
+  {
+    "invoice_id": "INV-0339",
+    "invoice_number": "2025/INV/0008",
+    "vendor_id": "VEN-011",
+    "po_id": "PO-0327",
+    "defect_code": "QTY_OVER_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 billed 1445.70 against 1220.00 delivered"
+  },
+  {
+    "invoice_id": "INV-0314",
+    "invoice_number": "SI000011",
+    "vendor_id": "VEN-007",
+    "po_id": "PO-0306",
+    "defect_code": "CURRENCY_MISMATCH",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed in USD against BDT on the order"
+  },
+  {
+    "invoice_id": "INV-0485",
+    "invoice_number": "2025/INV/0004",
+    "vendor_id": "VEN-026",
+    "po_id": "PO-0182",
+    "defect_code": "DUPLICATE_EXACT",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "resubmits 2025/INV/0004 from 2025-08-03 unchanged"
+  },
+  {
+    "invoice_id": "INV-0157",
+    "invoice_number": "2026/INV/0001",
+    "vendor_id": "VEN-001",
+    "po_id": "PO-0150",
+    "defect_code": "PRICE_ABOVE_PO",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 priced 70.73 against 60.45 ordered"
+  },
+  {
+    "invoice_id": "INV-0486",
+    "invoice_number": "JAM-2601-9550",
+    "vendor_id": "VEN-013",
+    "po_id": "PO-0215",
+    "defect_code": "DUPLICATE_NEAR",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "same order and total as JAM-2512-0007 under a different number"
+  },
+  {
+    "invoice_id": "INV-0134",
+    "invoice_number": "BILL 00010/26",
+    "vendor_id": "VEN-024",
+    "po_id": "PO-0130",
+    "defect_code": "PRICE_ABOVE_PO",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 priced 69234.12 against 65668.33 ordered"
+  },
+  {
+    "invoice_id": "INV-0487",
+    "invoice_number": "SI009552",
+    "vendor_id": "VEN-007",
+    "po_id": "PO-0148",
+    "defect_code": "DUPLICATE_NEAR",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "same order and total as SI000006 under a different number"
+  },
+  {
+    "invoice_id": "INV-0320",
+    "invoice_number": "TIT-2605-0008",
+    "vendor_id": "VEN-038",
+    "po_id": "PO-0311",
+    "defect_code": "QTY_OVER_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 billed 232.20 against 200.00 delivered"
+  },
+  {
+    "invoice_id": "INV-0067",
+    "invoice_number": "HAL-2512-0003",
+    "vendor_id": "VEN-008",
+    "po_id": "PO-0067",
+    "defect_code": "PRICE_ABOVE_HISTORY",
+    "expected_check": "PRICE_VARIANCE",
+    "detail": "STL-BIL-125 ordered and billed at 123332.48, against 71659.10 on the vendor's prior orders"
+  },
+  {
+    "invoice_id": "INV-0488",
+    "invoice_number": "INV-2025-00015",
+    "vendor_id": "VEN-020",
+    "po_id": "PO-0371",
+    "defect_code": "DUPLICATE_EXACT",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "resubmits INV-2025-00015 from 2025-11-05 unchanged"
+  },
+  {
+    "invoice_id": "INV-0307",
+    "invoice_number": "SI000008",
+    "vendor_id": "VEN-032",
+    "po_id": "PO-0299",
+    "defect_code": "TAX_MISMATCH",
+    "expected_check": "TAX_ARITHMETIC",
+    "detail": "tax stated 161437.70 against 187718.25 computed from the lines"
+  },
+  {
+    "invoice_id": "INV-0023",
+    "invoice_number": "INV-2025-00001",
+    "vendor_id": "VEN-030",
+    "po_id": "PO-0023",
+    "defect_code": "PRICE_ABOVE_PO",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 2 priced 155.61 against 132.56 ordered"
+  },
+  {
+    "invoice_id": "INV-0114",
+    "invoice_number": "BILL 00003/25",
+    "vendor_id": "VEN-009",
+    "po_id": "PO-0113",
+    "defect_code": "QTY_OVER_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 2 billed 1159.88 against 1070.00 delivered"
+  },
+  {
+    "invoice_id": "INV-0290",
+    "invoice_number": "BILL 00006/26",
+    "vendor_id": "VEN-039",
+    "po_id": "PO-0281",
+    "defect_code": "TAX_MISMATCH",
+    "expected_check": "TAX_ARITHMETIC",
+    "detail": "tax stated 172.56 against 205.92 computed from the lines"
+  },
+  {
+    "invoice_id": "INV-0288",
+    "invoice_number": "2026/INV/0007",
+    "vendor_id": "VEN-026",
+    "po_id": "PO-0278",
+    "defect_code": "CURRENCY_MISMATCH",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed in USD against BDT on the order"
+  },
+  {
+    "invoice_id": "INV-0152",
+    "invoice_number": "BILL 00003/26",
+    "vendor_id": "VEN-014",
+    "po_id": "PO-0145",
+    "defect_code": "QTY_OVER_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 billed 3185.30 against 2650.00 delivered"
+  },
+  {
+    "invoice_id": "INV-0135",
+    "invoice_number": "JAM-2512-0005",
+    "vendor_id": "VEN-013",
+    "po_id": "PO-0131",
+    "defect_code": "TAX_MISMATCH",
+    "expected_check": "TAX_ARITHMETIC",
+    "detail": "tax stated 35955.09 against 44279.67 computed from the lines"
+  },
+  {
+    "invoice_id": "INV-0237",
+    "invoice_number": "SHI-2509-0005",
+    "vendor_id": "VEN-023",
+    "po_id": "PO-0226",
+    "defect_code": "TAX_MISMATCH",
+    "expected_check": "TAX_ARITHMETIC",
+    "detail": "tax stated 226.44 against 352.16 computed from the lines"
+  },
+  {
+    "invoice_id": "INV-0489",
+    "invoice_number": "2026/INV/0011",
+    "vendor_id": "VEN-026",
+    "po_id": "PO-0459",
+    "defect_code": "DUPLICATE_EXACT",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "resubmits 2026/INV/0011 from 2026-03-03 unchanged"
+  },
+  {
+    "invoice_id": "INV-0097",
+    "invoice_number": "BILL 00002/25",
+    "vendor_id": "VEN-009",
+    "po_id": "PO-0100",
+    "defect_code": "PRICE_ABOVE_PO",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 priced 78.71 against 73.40 ordered"
+  },
+  {
+    "invoice_id": "INV-0375",
+    "invoice_number": "BILL 00008/26",
+    "vendor_id": "VEN-019",
+    "po_id": "PO-0364",
+    "defect_code": "TAX_MISMATCH",
+    "expected_check": "TAX_ARITHMETIC",
+    "detail": "tax stated 812.69 against 1002.09 computed from the lines"
+  },
+  {
+    "invoice_id": "INV-0490",
+    "invoice_number": "INV-2025-09567",
+    "vendor_id": "VEN-015",
+    "po_id": "PO-0020",
+    "defect_code": "DUPLICATE_NEAR",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "same order and total as INV-2025-00002 under a different number"
+  },
+  {
+    "invoice_id": "INV-0082",
+    "invoice_number": "SI000001",
+    "vendor_id": "VEN-012",
+    "po_id": "PO-0083",
+    "defect_code": "PRICE_ABOVE_PO",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 priced 16904.99 against 15023.99 ordered"
+  },
+  {
+    "invoice_id": "INV-0491",
+    "invoice_number": "HAL-2608-0013",
+    "vendor_id": "VEN-008",
+    "po_id": "PO-0237",
+    "defect_code": "DUPLICATE_EXACT",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "resubmits HAL-2608-0013 from 2026-08-30 unchanged"
+  },
+  {
+    "invoice_id": "INV-0236",
+    "invoice_number": "JAM-2605-0008",
+    "vendor_id": "VEN-013",
+    "po_id": "PO-0225",
+    "defect_code": "CURRENCY_MISMATCH",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed in USD against BDT on the order"
+  },
+  {
+    "invoice_id": "INV-0492",
+    "invoice_number": "MEG-2512-0003",
+    "vendor_id": "VEN-003",
+    "po_id": "PO-0101",
+    "defect_code": "DUPLICATE_EXACT",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "resubmits MEG-2512-0003 from 2025-12-10 unchanged"
+  },
+  {
+    "invoice_id": "INV-0207",
+    "invoice_number": "2025/INV/0009",
+    "vendor_id": "VEN-031",
+    "po_id": "PO-0195",
+    "defect_code": "TAX_MISMATCH",
+    "expected_check": "TAX_ARITHMETIC",
+    "detail": "tax stated 3150.00 against 3972.26 computed from the lines"
+  },
+  {
+    "invoice_id": "INV-0493",
+    "invoice_number": "BILL 09073/25",
+    "vendor_id": "VEN-029",
+    "po_id": "PO-0379",
+    "defect_code": "NO_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed against PO/2025/00379 with no delivery recorded"
+  },
+  {
+    "invoice_id": "INV-0276",
+    "invoice_number": "INV-2026-00010",
+    "vendor_id": "VEN-030",
+    "po_id": "PO-0266",
+    "defect_code": "CURRENCY_MISMATCH",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed in USD against BDT on the order"
+  },
+  {
+    "invoice_id": "INV-0494",
+    "invoice_number": "BILL 09575/26",
+    "vendor_id": "VEN-014",
+    "po_id": "PO-0393",
+    "defect_code": "DUPLICATE_NEAR",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "same order and total as BILL 00014/26 under a different number"
+  },
+  {
+    "invoice_id": "INV-0495",
+    "invoice_number": "SI000009",
+    "vendor_id": "VEN-002",
+    "po_id": "PO-0344",
+    "defect_code": "DUPLICATE_EXACT",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "resubmits SI000009 from 2026-01-02 unchanged"
+  },
+  {
+    "invoice_id": "INV-0349",
+    "invoice_number": "BILL 00009/26",
+    "vendor_id": "VEN-004",
+    "po_id": "PO-0338",
+    "defect_code": "PRICE_ABOVE_HISTORY",
+    "expected_check": "PRICE_VARIANCE",
+    "detail": "JUT-HES-BTC ordered and billed at 112.20, against 75.92 on the vendor's prior orders"
+  },
+  {
+    "invoice_id": "INV-0206",
+    "invoice_number": "2025/INV/0008",
+    "vendor_id": "VEN-031",
+    "po_id": "PO-0195",
+    "defect_code": "PRICE_ABOVE_PO",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 priced 16728.26 against 14444.57 ordered"
+  },
+  {
+    "invoice_id": "INV-0496",
+    "invoice_number": "SI009079",
+    "vendor_id": "VEN-032",
+    "po_id": "PO-0368",
+    "defect_code": "NO_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed against PO/2025/00368 with no delivery recorded"
+  },
+  {
+    "invoice_id": "INV-0326",
+    "invoice_number": "SHI-2609-0006",
+    "vendor_id": "VEN-023",
+    "po_id": "PO-0316",
+    "defect_code": "QTY_OVER_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 billed 134.55 against 117.00 delivered"
+  },
+  {
+    "invoice_id": "INV-0015",
+    "invoice_number": "SI000001",
+    "vendor_id": "VEN-002",
+    "po_id": "PO-0015",
+    "defect_code": "TAX_MISMATCH",
+    "expected_check": "TAX_ARITHMETIC",
+    "detail": "tax stated 83565.31 against 122709.71 computed from the lines"
+  },
+  {
+    "invoice_id": "INV-0406",
+    "invoice_number": "2026/INV/0015",
+    "vendor_id": "VEN-031",
+    "po_id": "PO-0394",
+    "defect_code": "CURRENCY_MISMATCH",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed in USD against BDT on the order"
+  },
+  {
+    "invoice_id": "INV-0452",
+    "invoice_number": "SI000015",
+    "vendor_id": "VEN-032",
+    "po_id": "PO-0443",
+    "defect_code": "CURRENCY_MISMATCH",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed in USD against BDT on the order"
+  },
+  {
+    "invoice_id": "INV-0497",
+    "invoice_number": "SI009084",
+    "vendor_id": "VEN-027",
+    "po_id": "PO-0349",
+    "defect_code": "NO_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed against PO/2026/00349 with no delivery recorded"
+  },
+  {
+    "invoice_id": "INV-0498",
+    "invoice_number": "BILL 09085/26",
+    "vendor_id": "VEN-004",
+    "po_id": "PO-0335",
+    "defect_code": "NO_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed against PO/2026/00335 with no delivery recorded"
+  },
+  {
+    "invoice_id": "INV-0272",
+    "invoice_number": "SI000007",
+    "vendor_id": "VEN-032",
+    "po_id": "PO-0262",
+    "defect_code": "QTY_OVER_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "line 1 billed 3607.50 against 3250.00 delivered"
+  },
+  {
+    "invoice_id": "INV-0499",
+    "invoice_number": "2026/INV/9087",
+    "vendor_id": "VEN-006",
+    "po_id": "PO-0331",
+    "defect_code": "NO_DELIVERY",
+    "expected_check": "THREE_WAY_MATCH",
+    "detail": "billed against PO/2026/00331 with no delivery recorded"
+  },
+  {
+    "invoice_id": "INV-0390",
+    "invoice_number": "SI000010",
+    "vendor_id": "VEN-002",
+    "po_id": "PO-0377",
+    "defect_code": "PRICE_ABOVE_HISTORY",
+    "expected_check": "PRICE_VARIANCE",
+    "detail": "TEX-YRN-40S ordered and billed at 773.57, against 439.53 on the vendor's prior orders"
+  },
+  {
+    "invoice_id": "INV-0500",
+    "invoice_number": "HAL-2607-0006",
+    "vendor_id": "VEN-008",
+    "po_id": "PO-0104",
+    "defect_code": "DUPLICATE_EXACT",
+    "expected_check": "DUPLICATE_INVOICE",
+    "detail": "resubmits HAL-2607-0006 from 2026-07-16 unchanged"
+  }
+]

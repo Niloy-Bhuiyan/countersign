@@ -1,0 +1,27 @@
+{
+  "seed": 20260920,
+  "period_end": "2026-09-01",
+  "period_days": 425,
+  "target_defect_rate": 0.18,
+  "defect_codes": {
+    "QTY_OVER_DELIVERY": "THREE_WAY_MATCH",
+    "PRICE_ABOVE_PO": "THREE_WAY_MATCH",
+    "PRICE_ABOVE_HISTORY": "PRICE_VARIANCE",
+    "DUPLICATE_EXACT": "DUPLICATE_INVOICE",
+    "DUPLICATE_NEAR": "DUPLICATE_INVOICE",
+    "TAX_MISMATCH": "TAX_ARITHMETIC",
+    "NO_DELIVERY": "THREE_WAY_MATCH",
+    "CURRENCY_MISMATCH": "THREE_WAY_MATCH"
+  },
+  "counts": {
+    "vendors": 40,
+    "purchase_orders": 460,
+    "deliveries": 467,
+    "invoices": 500,
+    "defects": 90
+  },
+  "configured": {
+    "n_vendors": 40,
+    "n_purchase_orders": 460
+  }
+}
