@@ -4,6 +4,7 @@ import random
 
 import pdfplumber
 import pytest
+from pdfplumber.utils.exceptions import PdfminerException
 
 from countersign.vendors import normalise_vendor_name
 from data.render.mess import (
@@ -32,15 +33,17 @@ def test_variants_actually_vary(corpus):
 
 
 def test_a_corrupt_pdf_cannot_be_opened(tmp_path):
+    # Named rather than blind: ingestion has to catch exactly this to quarantine
+    # the file instead of failing the whole batch.
     path = write_corrupt_pdf(tmp_path / "corrupt.pdf")
-    with pytest.raises(Exception):
+    with pytest.raises(PdfminerException, match="Is this really a PDF"):
         with pdfplumber.open(path) as pdf:
             pdf.pages[0].extract_text()
 
 
 def test_an_encrypted_pdf_cannot_be_read_without_the_password(tmp_path):
     path = write_encrypted_pdf(tmp_path / "locked.pdf", "INV-0001")
-    with pytest.raises(Exception):
+    with pytest.raises(PdfminerException):
         with pdfplumber.open(path) as pdf:
             pdf.pages[0].extract_text()
 
