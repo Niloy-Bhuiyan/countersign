@@ -16,18 +16,44 @@ from decimal import Decimal
 from typing import NamedTuple
 
 PLACE_WORDS = [
-    "Padma", "Jamuna", "Meghna", "Titas", "Surma", "Karnaphuli", "Rupsha",
-    "Shitalakshya", "Brahmaputra", "Teesta", "Sangu", "Halda",
+    "Padma",
+    "Jamuna",
+    "Meghna",
+    "Titas",
+    "Surma",
+    "Karnaphuli",
+    "Rupsha",
+    "Shitalakshya",
+    "Brahmaputra",
+    "Teesta",
+    "Sangu",
+    "Halda",
 ]
 
 TRADE_WORDS = [
-    "Steel", "Cement", "Traders", "Industries", "Commodities", "Materials",
-    "Textile", "Jute", "Packaging", "Engineering", "Supply", "Agro",
+    "Steel",
+    "Cement",
+    "Traders",
+    "Industries",
+    "Commodities",
+    "Materials",
+    "Textile",
+    "Jute",
+    "Packaging",
+    "Engineering",
+    "Supply",
+    "Agro",
 ]
 
 SUFFIXES = [
-    "Ltd", "Limited", "Trading Ltd", "Industries Ltd", "Enterprise",
-    "& Sons", "Corporation", "Trading House",
+    "Ltd",
+    "Limited",
+    "Trading Ltd",
+    "Industries Ltd",
+    "Enterprise",
+    "& Sons",
+    "Corporation",
+    "Trading House",
 ]
 
 
@@ -40,6 +66,9 @@ class Item(NamedTuple):
     category: str
 
 
+# A price list is a table. Keeping it one row per item is worth pinning the
+# formatter off for; exploded across six lines each it stops being readable.
+# fmt: off
 #: The purchasing catalogue. Categories match what a building-materials group
 #: actually buys, which is what makes the spend dashboard mean anything.
 CATALOGUE: list[Item] = [
@@ -77,6 +106,7 @@ CATALOGUE: list[Item] = [
     Item("SVC-FRT-BRG", "River barge freight", "MT", Decimal("620.00"), Decimal("5"), "Freight"),
     Item("SVC-HND-LBR", "Loading and unloading labour", "MT", Decimal("185.00"), Decimal("5"), "Services"),
 ]
+# fmt: on
 
 BY_SKU = {item.sku: item for item in CATALOGUE}
 
