@@ -108,6 +108,19 @@ replays fixtures. _Instructions pending._
 
 ---
 
+## Documentation
+
+| | |
+|---|---|
+| [Product requirements](docs/PRD.md) | Problem, users, requirements with build status, success targets |
+| [Architecture](docs/architecture.md) | Components, the model boundary, the state machine |
+| [Data model](docs/database.md) | Twelve tables, amounts, indexes |
+| [Threat model](docs/security.md) | Led by prompt injection through supplier documents |
+| [Evaluation](docs/evaluation.md) | How the numbers will be produced, written before running it |
+| [Dataset card](docs/dataset-card.md) | The synthetic corpus and its limits |
+| [Decisions](docs/adr/) | Six architecture decision records |
+| [Contributing](CONTRIBUTING.md) | Setup and the invariants that are not style preferences |
+
 ## Contact
 
 Nurul Azam Bhuiyan — niloybhuiyann@gmail.com — [github.com/Niloy-Bhuiyan](https://github.com/Niloy-Bhuiyan)
