@@ -58,14 +58,16 @@ def _column_x(layout: Layout) -> list[float]:
     ]
 
 
-def _header(c: pdfcanvas.Canvas, invoice: Invoice, vendor: Vendor, layout: Layout) -> float:
+def _header(
+    c: pdfcanvas.Canvas, invoice: Invoice, vendor_name: str, tax_id: str, layout: Layout
+) -> float:
     y = PAGE_H - MARGIN
 
     c.setFont("Helvetica-Bold", 16)
-    c.drawString(MARGIN, y, vendor.legal_name)
+    c.drawString(MARGIN, y, vendor_name)
     y -= 6 * mm
     c.setFont("Helvetica", 8.5)
-    c.drawString(MARGIN, y, f"BIN/TIN: {vendor.tax_id}")
+    c.drawString(MARGIN, y, f"BIN/TIN: {tax_id}")
     y -= 4 * mm
     c.drawString(MARGIN, y, "Supplier address withheld in synthetic data")
 
@@ -159,13 +161,14 @@ def _totals(c: pdfcanvas.Canvas, invoice: Invoice, layout: Layout, y: float) -> 
     )
 
 
-def render(invoice: Invoice, vendor: Vendor, path: Path) -> Path:
+def render(invoice: Invoice, vendor: Vendor, path: Path, vendor_name: str | None = None) -> Path:
     layout = layout_for_vendor(vendor.id)
+    name = vendor_name or vendor.legal_name
     path.parent.mkdir(parents=True, exist_ok=True)
 
     c = pdfcanvas.Canvas(str(path), pagesize=A4)
     c.setTitle(f"{layout.title} {invoice.invoice_number}")
-    y = _header(c, invoice, vendor, layout)
+    y = _header(c, invoice, name, vendor.tax_id, layout)
     y = _table(c, invoice, layout, y)
     _totals(c, invoice, layout, y)
     c.showPage()

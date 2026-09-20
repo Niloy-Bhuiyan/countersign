@@ -34,9 +34,9 @@ def format_for_invoice(invoice: Invoice) -> str:
     return _PDF
 
 
-def _header_rows(invoice: Invoice, vendor: Vendor) -> list[list[str]]:
+def _header_rows(invoice: Invoice, vendor: Vendor, vendor_name: str) -> list[list[str]]:
     return [
-        [vendor.legal_name],
+        [vendor_name],
         [f"BIN/TIN: {vendor.tax_id}"],
         [],
         ["Invoice Number", invoice.invoice_number],
@@ -79,24 +79,28 @@ def _total_rows(invoice: Invoice) -> list[list]:
     ]
 
 
-def render_csv(invoice: Invoice, vendor: Vendor, path: Path) -> Path:
+def render_csv(
+    invoice: Invoice, vendor: Vendor, path: Path, vendor_name: str | None = None
+) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle)
-        writer.writerows(_header_rows(invoice, vendor))
+        writer.writerows(_header_rows(invoice, vendor, vendor_name or vendor.legal_name))
         writer.writerow(COLUMNS)
         writer.writerows(_line_rows(invoice))
         writer.writerows(_total_rows(invoice))
     return path
 
 
-def render_xlsx(invoice: Invoice, vendor: Vendor, path: Path) -> Path:
+def render_xlsx(
+    invoice: Invoice, vendor: Vendor, path: Path, vendor_name: str | None = None
+) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     book = Workbook()
     sheet = book.active
     sheet.title = "Invoice"
 
-    for row in _header_rows(invoice, vendor):
+    for row in _header_rows(invoice, vendor, vendor_name or vendor.legal_name):
         sheet.append(row)
     sheet.append(COLUMNS)
     header_row = sheet.max_row
