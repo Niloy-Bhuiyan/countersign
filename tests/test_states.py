@@ -17,9 +17,7 @@ def test_happy_path_to_cleared():
 
 def test_a_failed_check_blocks_clearing():
     with pytest.raises(TransitionError, match="1 of 3 checks did not pass"):
-        transition(
-            states.CHECKED, states.CLEARED, check_outcomes=["passed", "failed", "passed"]
-        )
+        transition(states.CHECKED, states.CLEARED, check_outcomes=["passed", "failed", "passed"])
 
 
 def test_an_abstention_blocks_clearing():

@@ -31,9 +31,7 @@ def to_decimal(value: Decimal | int | str) -> Decimal:
     downstream can tell it apart from an exact one.
     """
     if isinstance(value, float):
-        raise MoneyError(
-            f"float {value!r} is not an exact amount; pass a str, int or Decimal"
-        )
+        raise MoneyError(f"float {value!r} is not an exact amount; pass a str, int or Decimal")
     if isinstance(value, Decimal):
         return value
     try:

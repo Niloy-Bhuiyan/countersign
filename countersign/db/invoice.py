@@ -38,9 +38,7 @@ class Extraction(Base):
     __tablename__ = "extractions"
 
     id: Mapped[str] = pk()
-    document_id: Mapped[str] = mapped_column(
-        ForeignKey("documents.id"), index=True, nullable=False
-    )
+    document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), index=True, nullable=False)
     provider: Mapped[str] = mapped_column(String(40), nullable=False)
     model: Mapped[str] = mapped_column(String(120), nullable=False)
     # Which committed prompt directory produced this. Recorded on every row so a
@@ -61,9 +59,7 @@ class Invoice(Base):
     __tablename__ = "invoices"
 
     id: Mapped[str] = pk()
-    document_id: Mapped[str] = mapped_column(
-        ForeignKey("documents.id"), index=True, nullable=False
-    )
+    document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), index=True, nullable=False)
     extraction_id: Mapped[str | None] = mapped_column(ForeignKey("extractions.id"))
     invoice_number: Mapped[str] = mapped_column(String(60), index=True, nullable=False)
     vendor_id: Mapped[str | None] = mapped_column(ForeignKey("vendors.id"), index=True)

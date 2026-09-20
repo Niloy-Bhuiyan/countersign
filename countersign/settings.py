@@ -13,9 +13,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=".env", env_prefix="COUNTERSIGN_", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_prefix="COUNTERSIGN_", extra="ignore")
 
     # Storage. SQLite by default so a clone runs without a database server.
     database_url: str = "sqlite+aiosqlite:///./countersign.db"
