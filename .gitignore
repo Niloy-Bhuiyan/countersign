@@ -1,0 +1,43 @@
+# Agent and editor tooling: never tracked
+CLAUDE.md
+AGENTS.md
+.claude/
+.codex/
+.cursor/
+.aider*
+.github/copilot-*
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# Node
+node_modules/
+.next/
+out/
+.vercel/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Generated corpus and run artefacts
+data/corpus/
+data/storage/
+*.db
+*.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db
