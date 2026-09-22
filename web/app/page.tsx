@@ -1,37 +1,18 @@
 "use client";
 
-import {
-  ArrowRight,
-  BadgeCheck,
-  Banknote,
-  Calculator,
-  CheckCircle2,
-  Copy,
-  FileSearch,
-  FileText,
-  FlaskConical,
-  PackageCheck,
-  PenLine,
-  ScanText,
-  ShieldCheck,
-  TrendingUp,
-  Upload,
-  XCircle,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Search } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
-import { useJson } from "@/components/api";
-import { CHECK_ORDER, CHECKS, shortIssue, statusOf } from "@/components/explain";
+import { useEffect, useMemo, useState } from "react";
+import { api, useJson } from "@/components/api";
+import type { CaseDetail } from "@/components/CaseView";
+import { CHECK_ORDER, CHECKS, findingSentence, MISTAKES, NEXT_STEP, REASONS, shortIssue, statusOf } from "@/components/explain";
 import { compact, money } from "@/components/format";
-import { StatusPill, Tip } from "@/components/ui";
 
 type Summary = {
   documents: number;
   cleared: number;
   needsReview: number;
-  spendBDT: string;
   atRiskBDT: string;
-  withFindings: number;
   findingsByRule: { label: string; value: number }[];
 };
 
@@ -54,36 +35,108 @@ type Evaluation = {
   };
 };
 
-const CHECK_ICONS: Record<string, React.ElementType> = {
-  THREE_WAY_MATCH: PackageCheck,
-  PRICE_VARIANCE: TrendingUp,
-  DUPLICATE_INVOICE: Copy,
-  TAX_ARITHMETIC: Calculator,
-};
+function initials(name: string | null): string {
+  return (name ?? "?").split(/\s+/).filter((w) => /^[A-Za-z]/.test(w)).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+}
 
-const STEPS = [
-  { icon: Upload, title: "An invoice arrives", text: "A supplier sends a bill as a PDF, Excel sheet or CSV file." },
-  { icon: ScanText, title: "It's read automatically", text: "Countersign pulls out the supplier, items, quantities, prices and totals, and checks the sums add up." },
-  { icon: ShieldCheck, title: "Four checks run", text: "It compares the bill with what we ordered, what arrived, past prices and earlier invoices." },
-  { icon: PenLine, title: "A person decides", text: "You see what's wrong in plain words and approve, hold or escalate. Nothing is paid automatically." },
-];
+/** A live window onto the review screen, built from the same data as the real page. */
+function Preview({ rows }: { rows: Row[] }) {
+  const [id, setId] = useState(rows[0].id);
+  const [c, setC] = useState<CaseDetail | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    api<CaseDetail>(`/data/case/${id}.json`).then((d) => live && setC(d)).catch(() => live && setC(null));
+    return () => {
+      live = false;
+    };
+  }, [id]);
+
+  const row = rows.find((r) => r.id === id)!;
+  const findings = c ? c.results.filter((r) => r.outcome !== "passed") : [];
+  const next = c ? NEXT_STEP[c.action] : null;
+
+  return (
+    <div className="window" aria-label="Preview of the review screen">
+      <div className="window-bar"><i /><i /><i /><span>Countersign · Review</span></div>
+      <div className="window-body">
+        <div className="window-side">
+          <div className="fake-search"><Search size={14} aria-hidden /> Search</div>
+          {rows.map((r) => {
+            const s = statusOf(r);
+            return (
+              <button key={r.id} className="w-item" aria-current={r.id === id} onClick={() => setId(r.id)}>
+                <span className={`av av-${s.tone}`} aria-hidden>{initials(r.vendor)}</span>
+                <span className="who">{r.vendor ?? "Unreadable file"}</span>
+                <span className="amt">{r.total ? compact(r.total) : ""}</span>
+                <span className="what">{shortIssue(r.failed, r.abstained, r.reason)}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="window-main">
+          <div className="top">
+            <span className={`dot dot-${statusOf(row).tone}`} aria-hidden />
+            {row.vendor}
+            <span className="end">{statusOf(row).label}</span>
+          </div>
+          <div className="thread" aria-live="polite">
+            <span className="time">Invoice {row.number ?? row.id}</span>
+            <div className="bubble">
+              <span className="l">Amount billed</span>
+              {row.currency} {money(row.total)}
+            </div>
+            {c && row.reason && row.reason !== "check_findings" && (
+              <div className="bubble"><span className="l">Couldn&rsquo;t check</span>{REASONS[row.reason]?.long}</div>
+            )}
+            {findings.slice(0, 2).map((r, i) => (
+              <div className="bubble" key={i}>
+                <span className="l">{CHECKS[r.check_code]?.name}</span>
+                {findingSentence(r)}
+              </div>
+            ))}
+            {c && !findings.length && !(row.reason && row.reason !== "check_findings") && (
+              <div className="bubble"><span className="l">All four checks</span>Passed. Nothing wrong found.</div>
+            )}
+            {next && (
+              <div className="bubble me">
+                <span className="l">Suggested next step</span>
+                {next.what}
+              </div>
+            )}
+            <div className="act">
+              <Link className="btn btn-sm" href={`/review/?id=${id}`}>Open this invoice <ArrowRight size={15} aria-hidden /></Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Overview() {
   const { data: s } = useJson<Summary>("/data/summary.json");
   const { data: rows } = useJson<Row[]>("/data/queue.json");
   const { data: e } = useJson<Evaluation>("/data/evaluation.json");
+  const [mistake, setMistake] = useState(MISTAKES[0].id);
 
   const examples = useMemo(() => {
     if (!rows) return [];
-    const pick = (f: (r: Row) => boolean) => rows.find(f);
-    return [
-      pick((r) => r.failed.some((k) => k.startsWith("PRICE_VARIANCE"))),
-      pick((r) => r.failed.some((k) => k.startsWith("DUPLICATE"))),
-      pick((r) => r.state === "cleared"),
-    ].filter(Boolean) as Row[];
+    const picks: Row[] = [];
+    const add = (f: (r: Row) => boolean) => {
+      const r = rows.find((x) => f(x) && !picks.includes(x) && x.vendor);
+      if (r) picks.push(r);
+    };
+    add((r) => r.failed.includes("THREE_WAY_MATCH/quantity_over_received"));
+    add((r) => r.failed.includes("PRICE_VARIANCE/above_history"));
+    add((r) => r.failed.includes("TAX_ARITHMETIC/tax_total"));
+    add((r) => r.failed.some((k) => k.startsWith("DUPLICATE")));
+    add((r) => r.state === "cleared");
+    add((r) => !r.failed.length && r.abstained.length > 0);
+    return picks;
   }, [rows]);
 
-  const caughtBy = useMemo(() => {
+  const flagged = useMemo(() => {
     const out: Record<string, number> = {};
     s?.findingsByRule.forEach((f) => {
       const code = f.label.split("/")[0];
@@ -93,152 +146,72 @@ export default function Overview() {
   }, [s]);
 
   const now = e?.["checks-current"];
-  const caught = now ? now.defects.planted - now.defects.reached_cleared : null;
+  const chosen = MISTAKES.find((m) => m.id === mistake)!;
 
   return (
-    <div className="page">
+    <main className="page" style={{ paddingTop: 0 }}>
       <section className="hero">
+        <Link className="kicker-link" href="/method/">
+          <b>Live demo</b> · See how accurate it is <span className="arrow"><ArrowUpRight size={13} aria-hidden /></span>
+        </Link>
+        <h1>
+          Check every invoice
+          <br />
+          before you <span className="mark" aria-hidden><Check size="0.5em" strokeWidth={3} /></span> pay
+        </h1>
+        <p className="lead">
+          Countersign compares each supplier bill with what you ordered and received, and tells you what&rsquo;s wrong.
+        </p>
+        <div className="ctas">
+          <Link className="btn btn-primary btn-lg" href="/review/">Review invoices</Link>
+          <Link className="btn btn-lg" href="/lab/">Try it yourself</Link>
+        </div>
+        {examples.length > 0 && <Preview rows={examples} />}
+      </section>
+
+      <section className="section-lg card feature">
         <div>
-          <span className="pill pill-info" style={{ marginBottom: 16 }}>Accounts payable · Live demo</span>
-          <h1>
-            Check every supplier invoice <span>before you pay it.</span>
-          </h1>
-          <p className="lead">
-            Countersign reads the invoices your suppliers send, compares each one with what you actually ordered and
-            received, and tells you in plain words if something is wrong: overcharging, billing for goods that never
-            arrived, wrong VAT, or the same bill sent twice. A person always makes the final call.
-          </p>
-          <div className="ctas">
-            <Link className="btn btn-primary btn-lg" href="/review/">
-              Start reviewing invoices <ArrowRight size={18} aria-hidden />
-            </Link>
-            <Link className="btn btn-accent btn-lg" href="/lab/">
-              <FlaskConical size={18} aria-hidden /> Try it with a test invoice
-            </Link>
-          </div>
-          <p className="small muted" style={{ marginTop: 14 }}>
-            This demo uses 500 made-up invoices from 40 fictional suppliers. No real company is involved.
-          </p>
+          <h2>Nothing is paid without a signature</h2>
+          <p>Countersign only suggests. A person approves, holds or escalates, and every decision is signed and kept.</p>
         </div>
-
-        <div className="card hero-card" aria-label="Examples from the review queue">
-          <div className="small" style={{ fontWeight: 700 }}>What a reviewer sees</div>
-          {examples.map((r) => (
-            <Link key={r.id} href={`/review/?id=${r.id}`} className="mini-row" style={{ color: "inherit", textDecoration: "none" }}>
-              <FileText size={20} className="muted" aria-hidden />
-              <span style={{ minWidth: 0 }}>
-                <span className="who" style={{ display: "block" }}>{r.vendor}</span>
-                <span className="what">
-                  {r.total ? `${r.currency} ${money(r.total)}` : ""} · {shortIssue(r.failed, r.abstained, r.reason)}
-                </span>
-              </span>
-              <StatusPill status={statusOf(r)} />
-            </Link>
-          ))}
-          {!rows && <p className="small muted">Loading examples…</p>}
-        </div>
+        <div className="orb" aria-hidden><Check size={96} strokeWidth={2.5} /></div>
       </section>
 
-      <section className="section">
-        <h2 className="section-title">Right now in this demo</h2>
-        <p className="section-sub">What the numbers mean, in one line each. Tap the <b>i</b> for more.</p>
-        <div className="grid-4">
-          <div className="card stat">
-            <div className="stat-top">
-              <span className="stat-icon tone-primary"><FileSearch size={18} aria-hidden /></span>
-              Invoices received
-              <Tip>Every supplier bill in this demo, whether it was a PDF, a spreadsheet or a file that couldn't be opened.</Tip>
-            </div>
-            <div className="stat-value">{s?.documents ?? "…"}</div>
-            <div className="stat-meaning">Bills from suppliers waiting to be checked and paid.</div>
-          </div>
-          <div className="card stat">
-            <div className="stat-top">
-              <span className="stat-icon tone-ok"><BadgeCheck size={18} aria-hidden /></span>
-              Ready to pay
-              <Tip>These passed all four checks. They still wait for a person to approve them: <b>nothing is paid automatically</b>.</Tip>
-            </div>
-            <div className="stat-value">
-              {s?.cleared ?? "…"}
-              {s && <small>{((s.cleared / s.documents) * 100).toFixed(0)}%</small>}
-            </div>
-            <div className="stat-meaning">Passed every check. Just need a person to approve.</div>
-          </div>
-          <div className="card stat">
-            <div className="stat-top">
-              <span className="stat-icon tone-bad"><XCircle size={18} aria-hidden /></span>
-              Need a closer look
-              <Tip>At least one check found a problem ({s?.withFindings ?? "…"} invoices), or couldn't decide, or the document couldn't be read.</Tip>
-            </div>
-            <div className="stat-value">{s?.needsReview ?? "…"}</div>
-            <div className="stat-meaning">Something's wrong or unclear. A person should check.</div>
-          </div>
-          <div className="card stat">
-            <div className="stat-top">
-              <span className="stat-icon tone-warn"><Banknote size={18} aria-hidden /></span>
-              Money on hold
-              <Tip>The total of the invoices that need a closer look, in Bangladeshi taka. This money isn't paid until someone decides.</Tip>
-            </div>
-            <div className="stat-value">{s ? <>BDT {compact(s.atRiskBDT)}</> : "…"}</div>
-            <div className="stat-meaning">Value of the invoices waiting for a decision.</div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section">
-        <h2 className="section-title">How it works</h2>
-        <p className="section-sub">Four steps from a supplier&rsquo;s email to a decision.</p>
-        <div className="steps">
-          {STEPS.map(({ icon: Icon, title, text }, i) => (
-            <div className="card step" key={title}>
-              <span className="n">{String(i + 1).padStart(2, "0")}</span>
-              <span className="stat-icon tone-primary"><Icon size={18} aria-hidden /></span>
-              <h3>{title}</h3>
-              <p>{text}</p>
+      <section className="section-lg">
+        <h2 className="section-title center">Four checks on every invoice</h2>
+        <div className="tiles">
+          {CHECK_ORDER.map((code) => (
+            <div className="tile" key={code}>
+              <h3>{CHECKS[code].name}</h3>
+              <p>{CHECKS[code].question}</p>
+              <div className="figure"><b>{flagged[code] ?? "…"}</b> invoices flagged</div>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="section">
-        <h2 className="section-title">The four checks</h2>
-        <p className="section-sub">Every invoice gets all four. Each one answers a simple question.</p>
-        <div className="grid-2">
-          {CHECK_ORDER.map((code) => {
-            const Icon = CHECK_ICONS[code];
-            return (
-              <div className="card check-card" key={code}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span className="stat-icon tone-primary"><Icon size={18} aria-hidden /></span>
-                  <h3>{CHECKS[code].name}</h3>
-                  {caughtBy[code] !== undefined && (
-                    <span className="pill pill-muted" style={{ marginLeft: "auto" }}>
-                      Flagged {caughtBy[code]} invoices
-                    </span>
-                  )}
-                </div>
-                <p className="q">&ldquo;{CHECKS[code].question}&rdquo;</p>
-                <p>{CHECKS[code].plain}</p>
-              </div>
-            );
-          })}
+      <section className="section-lg">
+        <h2 className="section-title">Plant a mistake. Watch it get caught.</h2>
+        <div className="chips" role="group" aria-label="Mistakes">
+          {MISTAKES.map((m) => (
+            <button key={m.id} className="chip" aria-pressed={m.id === mistake} onClick={() => setMistake(m.id)}>
+              {m.label}
+            </button>
+          ))}
         </div>
+        <p className="chip-body"><b>{chosen.label}.</b> {chosen.effect}</p>
+        <Link className="btn" style={{ marginTop: 24 }} href={`/lab/?t=${chosen.id}`}>Try this one</Link>
       </section>
 
-      <section className="section">
-        <div className="callout callout-ok">
-          <CheckCircle2 size={22} color="var(--ok)" aria-hidden />
-          <div>
-            <h4>How well does it work?</h4>
-            <p>
-              We planted {now?.defects.planted ?? 90} deliberate mistakes in the demo invoices. It stopped{" "}
-              <b>{caught ?? 89}</b> of them before payment and raised{" "}
-              <b>{now?.clean_invoices.with_a_failed_check ?? 0} false alarms</b> on correct invoices. The one it missed, and
-              why, is explained on the <Link href="/method/">accuracy page</Link>.
-            </p>
-          </div>
+      <section className="section-lg numbers">
+        <div className="n"><b>{s?.documents ?? "…"}</b><span>invoices checked</span></div>
+        <div className="n">
+          <b>{now ? `${now.defects.planted - now.defects.reached_cleared}/${now.defects.planted}` : "…"}</b>
+          <span>planted mistakes caught</span>
         </div>
+        <div className="n"><b>{now?.clean_invoices.with_a_failed_check ?? "…"}</b><span>false alarms</span></div>
+        <div className="n"><b>{s ? `BDT ${compact(s.atRiskBDT)}` : "…"}</b><span>waiting for a decision</span></div>
       </section>
-    </div>
+    </main>
   );
 }

@@ -214,6 +214,18 @@ export const NEXT_STEP: Record<string, { what: string; why: string; tone: Tone }
   },
 };
 
+/* ---------- mistakes you can plant in the lab ---------- */
+
+export const MISTAKES: { id: string; label: string; effect: string; target: string }[] = [
+  { id: "overbill", label: "Bill for more than arrived", effect: "One item is billed at 115% of what was delivered.", target: "THREE_WAY_MATCH/quantity_over_received" },
+  { id: "price_above_order", label: "Charge more than agreed", effect: "One item costs 8% more than the purchase order says.", target: "THREE_WAY_MATCH/price_above_order" },
+  { id: "tax_error", label: "Get the VAT wrong", effect: "The VAT total is about a fifth too low.", target: "TAX_ARITHMETIC/tax_total" },
+  { id: "inflated_order", label: "Inflate the order", effect: "Order and invoice agree, but the price is 60% above normal.", target: "PRICE_VARIANCE/above_history" },
+  { id: "currency", label: "Wrong currency", effect: "Billed in US dollars against an order in taka.", target: "THREE_WAY_MATCH/currency" },
+  { id: "resubmit", label: "Send it twice", effect: "The same invoice number, sent a second time.", target: "DUPLICATE_INVOICE/same_number" },
+  { id: "clean", label: "Nothing wrong", effect: "A correct invoice. It should pass every check.", target: "cleared" },
+];
+
 /* ---------- glossary ---------- */
 
 export const TERMS: { term: string; means: string }[] = [
