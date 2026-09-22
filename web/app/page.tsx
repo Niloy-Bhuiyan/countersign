@@ -1,275 +1,280 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { type Decision, type QueueRow, readDecisions, useJson } from "@/components/data";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { api, useDecisions, useJson, useWorkspace } from "@/components/api";
+import CaseView, { type CaseDetail } from "@/components/CaseView";
 import { compact, compareDecimal, date, money } from "@/components/format";
-import { ACTIONS, ActionTag, REASONS, STATES, StateTag, Tag, ruleLabel } from "@/components/labels";
+import { ActionMark, DecisionMark, REASONS, ruleLabel } from "@/components/labels";
 
-type Summary = {
-  documents: number;
-  cleared: number;
-  needsReview: number;
-  spendBDT: string;
-  atRiskBDT: string;
-  withFindings: number;
+type Row = {
+  id: string;
+  file: string;
+  format: string;
+  number: string | null;
+  vendor: string | null;
+  po: string | null;
+  issued: string | null;
+  currency: string | null;
+  total: string | null;
+  state: string;
+  reason: string | null;
+  action: string;
+  failed: string[];
+  abstained: string[];
+  origin?: string;
 };
 
-type View = "review" | "cleared" | "all";
+type View = "awaiting" | "cleared" | "decided" | "workspace" | "all";
 
-export default function Queue() {
+const VIEWS: { key: View; label: string }[] = [
+  { key: "awaiting", label: "Awaiting" },
+  { key: "cleared", label: "Cleared" },
+  { key: "decided", label: "Decided" },
+  { key: "workspace", label: "Mine" },
+  { key: "all", label: "All" },
+];
+
+function sumBDT(rows: Row[]): string {
+  // Integer paisa via BigInt: the headline total is exact, like every other figure.
+  let paisa = 0n;
+  for (const r of rows) {
+    if (r.currency !== "BDT" || !r.total) continue;
+    const [w, f = ""] = r.total.split(".");
+    paisa += BigInt(w + f.padEnd(2, "0").slice(0, 2));
+  }
+  const s = paisa.toString().padStart(3, "0");
+  return `${s.slice(0, -2)}.${s.slice(-2)}`;
+}
+
+function Review() {
   const router = useRouter();
-  const { data: rows, error } = useJson<QueueRow[]>("/data/queue.json");
-  const { data: summary } = useJson<Summary>("/data/summary.json");
-  const [view, setView] = useState<View>("review");
-  const [action, setAction] = useState("");
-  const [finding, setFinding] = useState("");
+  const params = useSearchParams();
+  const selectedId = params.get("id");
+  const ws = useWorkspace();
+  const { data: corpus, error } = useJson<Row[]>("/data/queue.json");
+  const { data: decisions, reload: reloadDecisions } = useDecisions(ws);
+  const [mine, setMine] = useState<Row[]>([]);
+  const [view, setView] = useState<View>("awaiting");
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState(0);
-  const [decisions, setDecisions] = useState<Record<string, Decision>>({});
+  const [finding, setFinding] = useState("");
+  const [detail, setDetail] = useState<CaseDetail | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const [preset, setPreset] = useState<"approved" | "held" | "escalated" | null>(null);
   const search = useRef<HTMLInputElement>(null);
-  const body = useRef<HTMLTableSectionElement>(null);
+  const list = useRef<HTMLDivElement>(null);
 
-  useEffect(() => setDecisions(readDecisions()), []);
+  useEffect(() => {
+    if (!ws) return;
+    api<Row[]>(`/api/workspaces/${ws}/cases`).then(setMine).catch(() => setMine([]));
+  }, [ws]);
+
+  const mineIds = useMemo(() => new Set(mine.map((r) => r.id)), [mine]);
+  const rows = useMemo(() => [...mine, ...(corpus ?? [])], [mine, corpus]);
+  const current = decisions?.current ?? {};
 
   const findings = useMemo(() => {
     const keys = new Set<string>();
-    rows?.forEach((row) => row.failed.concat(row.abstained).forEach((key) => keys.add(key)));
+    rows.forEach((r) => [...r.failed, ...r.abstained].forEach((k) => keys.add(k)));
     return [...keys].sort((a, b) => ruleLabel(a).localeCompare(ruleLabel(b)));
   }, [rows]);
 
-  const counts = useMemo(() => {
-    const review = rows?.filter((r) => r.state === "needs_review").length ?? 0;
-    return { review, cleared: (rows?.length ?? 0) - review, all: rows?.length ?? 0 };
-  }, [rows]);
+  const inView = useCallback(
+    (r: Row, v: View) => {
+      const decided = Boolean(current[r.id]);
+      if (v === "awaiting") return r.state === "needs_review" && !decided;
+      if (v === "cleared") return r.state === "cleared" && !decided;
+      if (v === "decided") return decided;
+      if (v === "workspace") return mineIds.has(r.id);
+      return true;
+    },
+    [current, mineIds],
+  );
 
   const visible = useMemo(() => {
-    if (!rows) return [];
     const q = query.trim().toLowerCase();
     return rows
-      .filter((r) =>
-        view === "all" ? true : view === "review" ? r.state === "needs_review" : r.state === "cleared",
-      )
-      .filter((r) => !action || r.action === action)
+      .filter((r) => inView(r, view))
       .filter((r) => !finding || r.failed.includes(finding) || r.abstained.includes(finding))
-      .filter(
-        (r) =>
-          !q ||
-          [r.id, r.number, r.vendor, r.po].some((field) => field?.toLowerCase().includes(q)),
-      )
+      .filter((r) => !q || [r.id, r.number, r.vendor, r.po].some((f) => f?.toLowerCase().includes(q)))
       .sort((a, b) =>
-        view === "cleared"
+        view === "workspace" || view === "decided" ? 0 : view === "cleared"
           ? (b.issued ?? "").localeCompare(a.issued ?? "")
           : compareDecimal(b.total, a.total),
       );
-  }, [rows, view, action, finding, query]);
+  }, [rows, view, finding, query, inView]);
 
-  useEffect(() => setSelected(0), [view, action, finding, query]);
+  const counts = useMemo(
+    () => Object.fromEntries(VIEWS.map((v) => [v.key, rows.filter((r) => inView(r, v.key)).length])) as Record<View, number>,
+    [rows, inView],
+  );
+  const awaitingValue = useMemo(() => sumBDT(rows.filter((r) => inView(r, "awaiting"))), [rows, inView]);
+
+  const select = useCallback(
+    (id: string) => {
+      const next = new URLSearchParams(window.location.search);
+      next.set("id", id);
+      router.replace(`/?${next.toString()}`, { scroll: false });
+      setPreset(null);
+    },
+    [router],
+  );
+
+  useEffect(() => {
+    if (!selectedId && visible.length) select(visible[0].id);
+  }, [selectedId, visible, select]);
+
+  const selectedRow = rows.find((r) => r.id === selectedId) ?? null;
+  const isMine = selectedId ? mineIds.has(selectedId) : false;
+
+  useEffect(() => {
+    if (!selectedId || (!corpus && !isMine)) return;
+    let live = true;
+    setDetailError(null);
+    const path = isMine && ws ? `/api/workspaces/${ws}/cases/${selectedId}` : `/data/case/${selectedId}.json`;
+    api<CaseDetail>(path)
+      .then((d) => live && setDetail(d))
+      .catch((e: Error) => live && setDetailError(e.message));
+    return () => {
+      live = false;
+    };
+  }, [selectedId, isMine, ws, corpus]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
-      const typing = (event.target as HTMLElement)?.closest("input, select, textarea");
-      if (event.key === "/" && !typing) {
-        event.preventDefault();
-        search.current?.focus();
-        return;
-      }
+      const typing = (event.target as HTMLElement)?.closest("input, textarea, select");
       if (typing) {
         if (event.key === "Escape") (event.target as HTMLElement).blur();
         return;
       }
-      if (event.key === "j" || event.key === "ArrowDown") {
+      const index = visible.findIndex((r) => r.id === selectedId);
+      if (event.key === "/") {
         event.preventDefault();
-        setSelected((i) => Math.min(i + 1, visible.length - 1));
-      } else if (event.key === "k" || event.key === "ArrowUp") {
+        search.current?.focus();
+      } else if ((event.key === "j" || event.key === "ArrowDown") && index < visible.length - 1) {
         event.preventDefault();
-        setSelected((i) => Math.max(i - 1, 0));
-      } else if (event.key === "Enter" && visible[selected]) {
-        router.push(`/case/?id=${visible[selected].id}`);
-      }
+        select(visible[index + 1].id);
+      } else if ((event.key === "k" || event.key === "ArrowUp") && index > 0) {
+        event.preventDefault();
+        select(visible[index - 1].id);
+      } else if (event.key === "a") setPreset("approved");
+      else if (event.key === "h") setPreset("held");
+      else if (event.key === "e") setPreset("escalated");
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [visible, selected, router]);
+  }, [visible, selectedId, select]);
 
   useEffect(() => {
-    body.current?.children[selected]?.scrollIntoView({ block: "nearest" });
-  }, [selected]);
+    list.current?.querySelector('[aria-current="true"]')?.scrollIntoView({ block: "nearest" });
+  }, [selectedId]);
+
+  const events = (decisions?.log ?? []).filter((e) => e.invoice_id === selectedId);
+  const docUrl = detail
+    ? isMine && ws
+      ? `/api/workspaces/${ws}/files/${detail.file}`
+      : `/documents/${detail.file}`
+    : "";
 
   return (
-    <>
-      <div className="page-head">
-        <div>
-          <h1>Review queue</h1>
-          <p>
-            Invoices the system could not clear on its own, with the finding stated in numbers and a
-            recommended action. Nothing here is paid until a person decides.
+    <div className="review">
+      <aside className="ledger" aria-label="Invoices">
+        <div className="ledger-head">
+          <p className="ledger-summary">
+            {corpus ? (
+              <>
+                <em>{counts.awaiting}</em> invoices await a decision, holding BDT {compact(awaitingValue)}.{" "}
+                {counts.cleared} cleared every check and wait for a countersignature.
+              </>
+            ) : error ? (
+              `Could not load the ledger: ${error}`
+            ) : (
+              "Loading the ledger…"
+            )}
           </p>
-        </div>
-        <div className="actions">
-          <a className="btn" href="/exports/countersign-lines.xlsx">
-            Export XLSX
-          </a>
-          <a className="btn" href="/exports/countersign-lines.csv">
-            Export CSV
-          </a>
-        </div>
-      </div>
-
-      <section className="kpis" aria-label="Summary">
-        <div className="panel kpi">
-          <div className="label">Invoiced, BDT</div>
-          <div className="value">{summary ? compact(summary.spendBDT) : "—"}</div>
-          <div className="sub">{summary ? `${summary.documents} documents received` : ""}</div>
-        </div>
-        <div className="panel kpi">
-          <div className="label">Awaiting a decision</div>
-          <div className="value">{summary?.needsReview ?? "—"}</div>
-          <div className="sub">{summary ? `${summary.withFindings} with a failed check` : ""}</div>
-        </div>
-        <div className="panel kpi">
-          <div className="label">Value held for review, BDT</div>
-          <div className="value">{summary ? compact(summary.atRiskBDT) : "—"}</div>
-          <div className="sub">Not payable until decided</div>
-        </div>
-        <div className="panel kpi">
-          <div className="label">Cleared by every check</div>
-          <div className="value">{summary?.cleared ?? "—"}</div>
-          <div className="sub">
-            {summary ? `${((summary.cleared / summary.documents) * 100).toFixed(1)}% of documents` : ""}
+          <div className="ledger-tools">
+            <div className="switch" role="group" aria-label="Show">
+              {VIEWS.map((v) => (
+                <button key={v.key} aria-pressed={view === v.key} onClick={() => setView(v.key)}>
+                  {v.label}
+                  <span className="n">{counts[v.key]}</span>
+                </button>
+              ))}
+            </div>
+            <div className="row">
+              <input ref={search} className="input" type="search" placeholder="Invoice, vendor or order"
+                aria-label="Search" value={query} onChange={(e) => setQuery(e.target.value)} />
+              <select className="select" aria-label="Finding" value={finding} onChange={(e) => setFinding(e.target.value)}
+                style={{ maxWidth: 170 }}>
+                <option value="">Any finding</option>
+                {findings.map((k) => <option key={k} value={k}>{ruleLabel(k)}</option>)}
+              </select>
+            </div>
           </div>
         </div>
-      </section>
 
-      <section className="panel" aria-label="Invoices">
-        <div className="filters">
-          <div className="segmented" role="group" aria-label="Show">
-            {(
-              [
-                ["review", "Needs review"],
-                ["cleared", "Cleared"],
-                ["all", "All"],
-              ] as const
-            ).map(([key, label]) => (
-              <button key={key} aria-pressed={view === key} onClick={() => setView(key)}>
-                {label}
-                <span className="count">{counts[key]}</span>
+        <div className="ledger-list" ref={list}>
+          {visible.map((r) => {
+            const note = r.reason && r.reason !== "check_findings"
+              ? REASONS[r.reason] ?? r.reason
+              : r.failed.length
+                ? ruleLabel(r.failed[0]) + (r.failed.length > 1 ? ` +${r.failed.length - 1}` : "")
+                : r.abstained.length
+                  ? `Could not judge: ${ruleLabel(r.abstained[0]).toLowerCase()}`
+                  : "No findings";
+            const decided = current[r.id];
+            return (
+              <button key={r.id} className="entry" aria-current={r.id === selectedId} onClick={() => select(r.id)}>
+                <span className="id">
+                  {r.number ?? r.id}{" "}
+                  {r.origin && <span className="origin">{r.origin === "lab" ? "Lab" : "Upload"}</span>}
+                </span>
+                <span className="amount fig">{r.total ? money(r.total) : "—"}</span>
+                <span className="who">{r.vendor ?? "Unread document"}</span>
+                <span className="small muted fig">{date(r.issued)}</span>
+                <span className="meta">
+                  <span className={`finding${r.failed.length ? " red" : ""}`}>{note}</span>
+                  {decided ? <DecisionMark decision={decided.decision} /> : <ActionMark action={r.action} />}
+                </span>
               </button>
-            ))}
-          </div>
-          <select
-            className="select"
-            aria-label="Recommended action"
-            value={action}
-            onChange={(e) => setAction(e.target.value)}
-          >
-            <option value="">Any recommendation</option>
-            {Object.entries(ACTIONS).map(([key, a]) => (
-              <option key={key} value={key}>
-                {a.label}
-              </option>
-            ))}
-          </select>
-          <select
-            className="select"
-            aria-label="Finding"
-            value={finding}
-            onChange={(e) => setFinding(e.target.value)}
-          >
-            <option value="">Any finding</option>
-            {findings.map((key) => (
-              <option key={key} value={key}>
-                {ruleLabel(key)}
-              </option>
-            ))}
-          </select>
-          <input
-            ref={search}
-            className="input"
-            type="search"
-            placeholder="Invoice, vendor or order"
-            aria-label="Search invoices"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <span className="small muted" style={{ marginLeft: "auto" }}>
-            <kbd>j</kbd> <kbd>k</kbd> move &nbsp; <kbd>Enter</kbd> open &nbsp; <kbd>/</kbd> search
-          </span>
-        </div>
-
-        <div className="table-wrap">
-          <table aria-label="Invoice queue" aria-rowcount={visible.length}>
-            <thead>
-              <tr>
-                <th>Invoice</th>
-                <th>Vendor</th>
-                <th>Order</th>
-                <th>Dated</th>
-                <th className="num">Amount</th>
-                <th>Findings</th>
-                <th>Recommendation</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody ref={body}>
-              {visible.map((row, index) => {
-                const decided = decisions[row.id];
-                const notes = row.failed.length ? row.failed : row.abstained;
-                return (
-                  <tr
-                    key={row.id}
-                    aria-selected={index === selected}
-                    onClick={() => router.push(`/case/?id=${row.id}`)}
-                    onMouseEnter={() => setSelected(index)}
-                  >
-                    <td>
-                      <span className="mono">{row.number ?? row.id}</span>
-                      {!row.number && <span className="muted small"> unread</span>}
-                    </td>
-                    <td className="clip" title={row.vendor ?? ""}>
-                      {row.vendor ?? <span className="muted">Unknown</span>}
-                    </td>
-                    <td className="mono small">{row.po ?? "—"}</td>
-                    <td className="mono small">{date(row.issued)}</td>
-                    <td className="num">{money(row.total, row.currency)}</td>
-                    <td className="clip">
-                      {row.reason && row.reason !== "check_findings" ? (
-                        <span className="small">{REASONS[row.reason] ?? row.reason}</span>
-                      ) : notes.length ? (
-                        <span className="small" title={notes.map(ruleLabel).join(", ")}>
-                          {ruleLabel(notes[0])}
-                          {notes.length > 1 && <span className="muted"> +{notes.length - 1}</span>}
-                          {!row.failed.length && <span className="muted"> (could not judge)</span>}
-                        </span>
-                      ) : (
-                        <span className="muted small">None</span>
-                      )}
-                    </td>
-                    <td>
-                      <ActionTag action={row.action} />
-                    </td>
-                    <td>
-                      {decided ? (
-                        <Tag tone={STATES[decided.decision].tone}>{STATES[decided.decision].label}</Tag>
-                      ) : (
-                        <StateTag state={row.state} />
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {error && <p className="panel-body">Could not load the queue: {error}</p>}
-          {!error && !rows && <p className="panel-body muted">Loading invoices…</p>}
-          {rows && visible.length === 0 && (
-            <p className="panel-body muted">
-              Nothing matches these filters.{" "}
-              {view === "review" && !action && !finding && !query && "The queue is empty."}
+            );
+          })}
+          {corpus && visible.length === 0 && (
+            <p className="paper-empty" style={{ height: "auto" }}>
+              {view === "workspace"
+                ? "Nothing of yours yet. Issue an invoice in the lab or upload one."
+                : "Nothing matches."}
             </p>
           )}
         </div>
-      </section>
-    </>
+        <div className="ledger-foot">
+          <span><kbd>j</kbd> <kbd>k</kbd> move</span>
+          <span><kbd>a</kbd> <kbd>h</kbd> <kbd>e</kbd> decide</span>
+          <span><kbd>/</kbd> search</span>
+          <a href="/exports/countersign-lines.xlsx">Export XLSX</a>
+        </div>
+      </aside>
+
+      <main className="paper">
+        {detail && detail.id === selectedId ? (
+          <div className="paper-inner">
+            <CaseView c={detail} ws={ws} events={events} documentUrl={docUrl} preset={preset}
+              onDecided={reloadDecisions} />
+          </div>
+        ) : (
+          <div className="paper-empty">
+            {detailError ? `Could not open ${selectedId}: ${detailError}` : selectedRow ? "Opening…" : "Select an invoice."}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default function ReviewPage() {
+  return (
+    <Suspense fallback={<div className="paper-empty">Loading…</div>}>
+      <Review />
+    </Suspense>
   );
 }
