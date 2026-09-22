@@ -51,3 +51,6 @@ web/public/documents/
 web/public/exports/
 web/next-env.d.ts
 web/tsconfig.tsbuildinfo
+
+# Assembled deployment directory (static site + API + data snapshot)
+deploy/
