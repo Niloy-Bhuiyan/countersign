@@ -59,6 +59,7 @@ class RawInvoice(BaseModel):
 
     invoice_number: str = ""
     vendor_name: str = ""
+    vendor_tax_id: str | None = None
     invoice_date: str = ""
     due_date: str | None = None
     purchase_order_ref: str | None = None
@@ -87,6 +88,7 @@ class ExtractedInvoice(BaseModel):
 
     invoice_number: str
     vendor_name: str
+    vendor_tax_id: str | None
     invoice_date: date
     due_date: date | None
     purchase_order_ref: str | None
@@ -183,6 +185,7 @@ def parse_raw(raw: RawInvoice) -> ParseOutcome:
         invoice=ExtractedInvoice(
             invoice_number=raw.invoice_number.strip(),
             vendor_name=raw.vendor_name.strip(),
+            vendor_tax_id=(raw.vendor_tax_id or "").strip() or None,
             invoice_date=invoice_date,
             due_date=due_date,
             purchase_order_ref=(raw.purchase_order_ref or "").strip() or None,

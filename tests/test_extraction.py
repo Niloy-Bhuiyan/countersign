@@ -94,6 +94,7 @@ def _invoice(**changes) -> ExtractedInvoice:
     fields = dict(
         invoice_number="1",
         vendor_name="v",
+        vendor_tax_id=None,
         invoice_date="2026-01-01",
         due_date=None,
         purchase_order_ref=None,

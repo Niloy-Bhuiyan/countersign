@@ -91,6 +91,7 @@ def from_text(text: str) -> RawInvoice:
     for index, row in enumerate(rows):
         if row.startswith("BIN/TIN:") and index > 0 and "vendor_name" not in fields:
             fields["vendor_name"] = rows[index - 1]
+            fields["vendor_tax_id"] = row.removeprefix("BIN/TIN:").strip()
             continue
 
         total = _TOTAL.match(row)
@@ -137,6 +138,10 @@ def from_rows(rows: list[list[str]]) -> RawInvoice:
             continue
         if position == 0:
             fields["vendor_name"] = filled[0]
+            continue
+
+        if filled[0].startswith("BIN/TIN:"):
+            fields["vendor_tax_id"] = filled[0].removeprefix("BIN/TIN:").strip()
             continue
 
         if columns is None:
