@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | Method specified. Harness not built. **No results exist yet.** |
-| **Command** | `make eval` (planned) |
+| **Status** | Harness built and run. Results in [`eval/report.md`](../eval/report.md). |
+| **Command** | `make eval` |
 | **Last reviewed** | 2026-09-20 |
 
 ---
@@ -15,9 +15,9 @@ you score on, what counts as correct, and whether you are allowed to change the 
 seeing the result. Writing those down first is the difference between an evaluation and a
 demonstration.
 
-The targets are already committed in [PRD.md](PRD.md#6-success-measures). None has been met,
-because none has been measured. Tuning toward them after the fact will be visible in the
-commit history, which is the point of committing them now.
+The targets were committed in [PRD.md](PRD.md#6-success-measures) before the first run, so
+tuning toward them afterwards would show in the commit history. Three were met and one, zero
+planted defects reaching `cleared`, was missed; the PRD records which and why.
 
 ## Rules
 
@@ -38,7 +38,8 @@ commit history, which is the point of committing them now.
 
 ### 1. Extraction accuracy, per field
 
-A hand-curated labelled set of at least 80 documents in `eval/labels/`, spanning all four PDF
+**As run:** every readable document is scored against what the generator says it contains,
+so the set is all 491 rather than a hand-picked 80. Originally planned: a hand-curated labelled set of at least 80 documents in `eval/labels/`, spanning all four PDF
 layouts plus XLSX and CSV.
 
 Reported **per field**, not only in aggregate — a 94% average hides that the grand total is
@@ -58,7 +59,16 @@ amounts.
 Amounts are compared exactly, with no tolerance. A tolerance here would hide precisely the
 error the tax check exists to find.
 
-### 2. Prompt v1 against v2, on the same set
+### 2. The reader alone against the reader with validators
+
+**Changed from the original plan, and why.** The plan compared two prompt versions. The
+published numbers use the offline reader, which has no prompt, so the comparison that could
+honestly be run is the one that isolates the validators: the same reader's output accepted as
+it stands (v1) against the same output checked arithmetically before persistence (v2). Result:
+9 wrong records persisted under v1, 0 under v2, with no correct record lost. The prompt
+comparison below remains the plan for model-based extraction.
+
+### 2b. Prompt v1 against v2, on the same set (not yet run)
 
 `prompts/v1` is a plain single-prompt extraction. `prompts/v2` is schema-constrained with
 arithmetic validators and one bounded retry. Both run over the same labelled set and both
@@ -127,14 +137,14 @@ single easiest thing to catch in an interview, and the hardest to recover from.
 
 ```
 eval/
-  labels/                     hand-labelled ground truth for extraction
+  run.py                                  the harness; the only reader of the ground truth
   results/
-    extraction-v1.json
-    extraction-v2.json
-    exceptions.json
-    routing.json
-  manual_baseline.md
-  report.md                   generated; what the README quotes
+    extraction.json                       per-field accuracy, reader alone vs with validators
+    checks-current.json                   detection, routing, false positives
+    checks-without-materiality-floor.json the configuration it replaced, kept
+    recommendations.json                  the agent's action mix
+  manual_baseline.md                      protocol; results not yet recorded
+  report.md                               generated; what the README quotes
 ```
 
 `make eval` regenerates everything under `results/` and rewrites `report.md`. Raw result
