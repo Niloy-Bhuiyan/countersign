@@ -328,8 +328,11 @@ td.off { color: var(--red); font-weight: 600; }
 .prose b { color: var(--ink); }
 
 @media (max-width: 1100px) {
-  .review { grid-template-columns: 1fr; height: auto; }
-  .ledger { border-right: 0; }
+  .review { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .ledger { border-right: 0; min-width: 0; }
+  .ledger-tools .row { flex-wrap: wrap; }
+  .ledger-tools .row .select { flex: 1 1 140px; max-width: none !important; }
+  .ledger-tools .row .input { flex: 1 1 200px; }
   .ledger-list { max-height: 55vh; }
   .paper-inner { padding: 24px 20px 60px; }
   .lab, .two { grid-template-columns: 1fr; }
@@ -339,6 +342,10 @@ td.off { color: var(--red); font-weight: 600; }
   .masthead { gap: 14px; padding: 0 14px; overflow-x: auto; }
   .masthead-end .synthetic, .wordmark span { display: none; }
   .page { padding: 24px 16px 60px; }
+  .ledger-head, .entry { padding-left: 16px; padding-right: 16px; }
+  .ledger-foot kbd, .ledger-foot span { display: none; }
+  .paper-inner { padding: 20px 16px 48px; }
+  .case-head .title { font-size: 22px !important; }
   .page-title { font-size: 28px; }
   .check { grid-template-columns: 22px 1fr; }
   .check > p, .check > div:last-child { grid-column: 2; }
