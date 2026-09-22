@@ -3,7 +3,7 @@
 VENV ?= .venv/Scripts
 PY   := $(VENV)/python.exe
 
-.PHONY: install corpus test lint fmt migrate check eval web
+.PHONY: install corpus test lint fmt migrate check eval web serve deploy
 
 install:
 	python -m venv .venv
@@ -39,3 +39,12 @@ eval:
 web:
 	$(PY) -m scripts.export_web
 	cd web && npm ci && npm run build
+
+## Console and API together, as deployed: http://localhost:4321
+serve:
+	$(PY) -m scripts.serve_local
+
+## Assemble deploy/ (console + API + snapshot) and ship it to production.
+deploy: web
+	$(PY) -m scripts.assemble_deploy
+	cd deploy && vercel deploy --prod
