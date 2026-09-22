@@ -4,7 +4,28 @@ Invoice-to-payment reconciliation with document extraction, deterministic three-
 matching, and an approval-gated agent that recommends but never pays.
 
 **Live console: [countersign-zeta.vercel.app](https://countersign-zeta.vercel.app)** ·
-[Evaluation report](eval/report.md) · [How it works](https://countersign-zeta.vercel.app/method/)
+[Invoice lab](https://countersign-zeta.vercel.app/lab/) ·
+[API reference](https://countersign-zeta.vercel.app/api/docs) ·
+[Evaluation report](eval/report.md)
+
+## Try it
+
+- **Review.** A ledger of 500 invoices beside the open case: findings in numbers, the
+  vendor's price history drawn against the invoice, the lines against the order and
+  deliveries, and the source document. `j`/`k` to move, `a`/`h`/`e` to decide.
+- **Sign a decision.** It is recorded on the server, checked by the same state machine as
+  the pipeline, and kept in an append-only audit trail you can export. Overruling the
+  recommendation requires a written reason; the server refuses it otherwise.
+- **The invoice lab.** Pick a vendor and something to get wrong: overbill, overprice,
+  misstate the VAT, inflate the order itself, change the currency, resubmit. The server
+  raises an order at that vendor's usual prices, records the delivery, writes the
+  supplier's invoice as a PDF, and **reads that PDF back** through the pipeline. Each
+  scenario is caught by the check it targets; the clean one clears.
+- **Upload your own** PDF, XLSX or CSV. Download a corpus invoice and upload it again: it is
+  caught as a duplicate, because the live ledger already knows every corpus invoice.
+
+Everything you do lives in your own workspace, carried in the URL, so it can be shared and
+nobody else's clicks change yours.
 
 ---
 
@@ -111,21 +132,26 @@ flowchart LR
     Q --> H
 ```
 
-Full detail in [docs/architecture.md](docs/architecture.md). The live console is a static
-export: the pipeline runs offline and writes its results, so the demo has no server to fail
-and no keys to leak. Decisions made in the demo are kept in the browser and nowhere else.
+Full detail in [docs/architecture.md](docs/architecture.md). The console is a static
+Next.js export; the API is a FastAPI function on Vercel running the same `countersign`
+package the evaluation measured. Uploads, lab orders and decisions persist in a private
+Vercel Blob store, append-only, one workspace per reviewer
+([ADR-007](docs/adr/ADR-007-workspaces-and-append-only-decisions.md)).
 
 ## Running it
 
 ```bash
 make install        # Python venv and dependencies
 make corpus         # rebuild the synthetic corpus from the committed seed
-make check          # lint, format, 149 tests, migrations, schema drift
+make check          # lint, format, 170 tests, migrations, schema drift
 make eval           # measure everything; rewrites eval/results and eval/report.md
 make web            # export console data and build the static site into web/out
+make serve          # console and API together on http://localhost:4321
+make deploy         # assemble deploy/ and ship it to Vercel
 ```
 
-Nothing needs an API key or a network connection.
+Nothing needs an API key or a network connection: without a Blob token the API keeps
+workspaces in memory.
 
 ## Documentation
 
@@ -137,7 +163,7 @@ Nothing needs an API key or a network connection.
 | [Threat model](docs/security.md) | Led by prompt injection through supplier documents |
 | [Evaluation](docs/evaluation.md) | The method, written before the first run |
 | [Dataset card](docs/dataset-card.md) | The synthetic corpus and its limits |
-| [Decisions](docs/adr/) | Architecture decision records |
+| [Decisions](docs/adr/) | Seven architecture decision records |
 | [Contributing](CONTRIBUTING.md) | Setup and the invariants that are not style preferences |
 
 ## Limitations
@@ -146,8 +172,11 @@ Nothing needs an API key or a network connection.
 - Extraction is measured for the offline reader only. Model-based extraction is not evaluated.
 - No OCR: image-only pages are quarantined, and one of them hid the only defect that cleared.
 - The agent's drafting node is a deterministic policy in this release.
-- The API and database persistence are designed (schema, migrations, state machine) but the
-  batch pipeline runs in memory; the console reads its exported results.
+- Workspaces are identified by an unguessable link, not an account. Right for a public
+  demonstration; production would take the reviewer's identity from single sign-on.
+- The deployed API stores decisions in Blob storage, not the PostgreSQL schema in
+  `countersign/db`, which is built and migrated but not deployed.
+- No rate limiting on the public API.
 - Single currency pair. Currency mismatch is detected, not converted.
 
 ## Contact
