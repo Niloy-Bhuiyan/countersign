@@ -1,0 +1,532 @@
+[
+  {
+    "id": "VEN-001",
+    "legal_name": "Teesta Supply Enterprise",
+    "normalised_name": "teesta supply enterprise",
+    "tax_id": "359042440",
+    "payment_terms_days": 45,
+    "currency": "BDT",
+    "skus": [
+      "JUT-SAK-50",
+      "JUT-HES-BTC"
+    ],
+    "price_factor": "0.9851"
+  },
+  {
+    "id": "VEN-002",
+    "legal_name": "Meghna Agro Enterprise",
+    "normalised_name": "meghna agro enterprise",
+    "tax_id": "173698440",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "TEX-YRN-40S",
+      "TEX-YRN-30S"
+    ],
+    "price_factor": "0.9727"
+  },
+  {
+    "id": "VEN-003",
+    "legal_name": "Meghna Textile Trading House",
+    "normalised_name": "meghna textile trading house",
+    "tax_id": "601237812",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "STL-ROD-12",
+      "STL-ROD-16",
+      "STL-BIL-125",
+      "STL-GI-SHEET"
+    ],
+    "price_factor": "1.0112"
+  },
+  {
+    "id": "VEN-004",
+    "legal_name": "Teesta Industries Ltd",
+    "normalised_name": "teesta industries",
+    "tax_id": "823940780",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "JUT-SAK-50",
+      "JUT-HES-BTC"
+    ],
+    "price_factor": "0.9748"
+  },
+  {
+    "id": "VEN-005",
+    "legal_name": "Titas Industries Enterprise",
+    "normalised_name": "titas industries enterprise",
+    "tax_id": "806727839",
+    "payment_terms_days": 60,
+    "currency": "BDT",
+    "skus": [
+      "PKG-PPB-50",
+      "PKG-SHR-FILM",
+      "PKG-STR-12"
+    ],
+    "price_factor": "0.9749"
+  },
+  {
+    "id": "VEN-006",
+    "legal_name": "Halda Agro Limited",
+    "normalised_name": "halda agro",
+    "tax_id": "567288408",
+    "payment_terms_days": 45,
+    "currency": "BDT",
+    "skus": [
+      "STL-BIL-125",
+      "STL-ROD-16"
+    ],
+    "price_factor": "1.0274"
+  },
+  {
+    "id": "VEN-007",
+    "legal_name": "Teesta Supply Trading House",
+    "normalised_name": "teesta supply trading house",
+    "tax_id": "609385314",
+    "payment_terms_days": 15,
+    "currency": "BDT",
+    "skus": [
+      "TEX-YRN-40S",
+      "TEX-YRN-30S"
+    ],
+    "price_factor": "0.9794"
+  },
+  {
+    "id": "VEN-008",
+    "legal_name": "Halda Steel Trading Ltd",
+    "normalised_name": "halda steel trading",
+    "tax_id": "573788491",
+    "payment_terms_days": 15,
+    "currency": "BDT",
+    "skus": [
+      "STL-BIL-125",
+      "STL-ROD-16"
+    ],
+    "price_factor": "1.0202"
+  },
+  {
+    "id": "VEN-009",
+    "legal_name": "Shitalakshya Steel Enterprise",
+    "normalised_name": "shitalakshya steel enterprise",
+    "tax_id": "211912996",
+    "payment_terms_days": 45,
+    "currency": "BDT",
+    "skus": [
+      "JUT-SAK-50",
+      "JUT-HES-BTC"
+    ],
+    "price_factor": "0.9876"
+  },
+  {
+    "id": "VEN-010",
+    "legal_name": "Rupsha Cement Limited",
+    "normalised_name": "rupsha cement",
+    "tax_id": "379625858",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "PKG-STR-12",
+      "PKG-PPB-50",
+      "PKG-SHR-FILM"
+    ],
+    "price_factor": "1.0629"
+  },
+  {
+    "id": "VEN-011",
+    "legal_name": "Meghna Steel Corporation",
+    "normalised_name": "meghna steel",
+    "tax_id": "432101850",
+    "payment_terms_days": 15,
+    "currency": "BDT",
+    "skus": [
+      "PKG-STR-12",
+      "PKG-PPB-50",
+      "PKG-SHR-FILM"
+    ],
+    "price_factor": "1.0349"
+  },
+  {
+    "id": "VEN-012",
+    "legal_name": "Teesta Materials Ltd",
+    "normalised_name": "teesta materials",
+    "tax_id": "188975574",
+    "payment_terms_days": 15,
+    "currency": "BDT",
+    "skus": [
+      "SVC-FRT-BRG",
+      "SVC-FRT-INL"
+    ],
+    "price_factor": "1.067"
+  },
+  {
+    "id": "VEN-013",
+    "legal_name": "Jamuna Engineering Enterprise",
+    "normalised_name": "jamuna engineering enterprise",
+    "tax_id": "329271812",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "PKG-STR-12",
+      "PKG-SHR-FILM",
+      "PKG-PPB-50"
+    ],
+    "price_factor": "1.0249"
+  },
+  {
+    "id": "VEN-014",
+    "legal_name": "Teesta Textile Trading House",
+    "normalised_name": "teesta textile trading house",
+    "tax_id": "798151463",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "CEM-OPC-50",
+      "CEM-PCC-50"
+    ],
+    "price_factor": "1.0556"
+  },
+  {
+    "id": "VEN-015",
+    "legal_name": "Halda Engineering Industries Ltd",
+    "normalised_name": "halda engineering industries",
+    "tax_id": "631897670",
+    "payment_terms_days": 60,
+    "currency": "BDT",
+    "skus": [
+      "STL-GI-SHEET",
+      "STL-ROD-12"
+    ],
+    "price_factor": "0.9485"
+  },
+  {
+    "id": "VEN-016",
+    "legal_name": "Surma Packaging Limited",
+    "normalised_name": "surma packaging",
+    "tax_id": "571854086",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "CEM-PCC-50",
+      "CEM-OPC-50"
+    ],
+    "price_factor": "0.9872"
+  },
+  {
+    "id": "VEN-017",
+    "legal_name": "Karnaphuli Industries Enterprise",
+    "normalised_name": "karnaphuli industries enterprise",
+    "tax_id": "960525800",
+    "payment_terms_days": 15,
+    "currency": "BDT",
+    "skus": [
+      "CEM-OPC-50",
+      "CEM-PCC-50"
+    ],
+    "price_factor": "1.0065"
+  },
+  {
+    "id": "VEN-018",
+    "legal_name": "Teesta Industries Corporation",
+    "normalised_name": "teesta industries",
+    "tax_id": "476696386",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "RAW-LST-BULK",
+      "RAW-GYP-BULK"
+    ],
+    "price_factor": "1.0355"
+  },
+  {
+    "id": "VEN-019",
+    "legal_name": "Shitalakshya Jute Trading Ltd",
+    "normalised_name": "shitalakshya jute trading",
+    "tax_id": "487879962",
+    "payment_terms_days": 60,
+    "currency": "BDT",
+    "skus": [
+      "SVC-HND-LBR"
+    ],
+    "price_factor": "1.0138"
+  },
+  {
+    "id": "VEN-020",
+    "legal_name": "Surma Industries Corporation",
+    "normalised_name": "surma industries",
+    "tax_id": "337654952",
+    "payment_terms_days": 15,
+    "currency": "BDT",
+    "skus": [
+      "PKG-SHR-FILM",
+      "PKG-STR-12",
+      "PKG-PPB-50"
+    ],
+    "price_factor": "0.9987"
+  },
+  {
+    "id": "VEN-021",
+    "legal_name": "Padma Jute & Sons",
+    "normalised_name": "padma jute",
+    "tax_id": "257339760",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "SPR-FLT-HYD",
+      "SPR-BLT-B98",
+      "SPR-RFR-BRK",
+      "SPR-BRG-6205"
+    ],
+    "price_factor": "0.965"
+  },
+  {
+    "id": "VEN-022",
+    "legal_name": "Brahmaputra Commodities Corporation",
+    "normalised_name": "brahmaputra commodities",
+    "tax_id": "353202886",
+    "payment_terms_days": 45,
+    "currency": "BDT",
+    "skus": [
+      "SVC-HND-LBR"
+    ],
+    "price_factor": "1.0438"
+  },
+  {
+    "id": "VEN-023",
+    "legal_name": "Shitalakshya Packaging Enterprise",
+    "normalised_name": "shitalakshya packaging enterprise",
+    "tax_id": "283430589",
+    "payment_terms_days": 45,
+    "currency": "BDT",
+    "skus": [
+      "SVC-HND-LBR"
+    ],
+    "price_factor": "0.9979"
+  },
+  {
+    "id": "VEN-024",
+    "legal_name": "Jamuna Steel Trading Ltd",
+    "normalised_name": "jamuna steel trading",
+    "tax_id": "280779503",
+    "payment_terms_days": 15,
+    "currency": "BDT",
+    "skus": [
+      "STL-ROD-10",
+      "STL-BIL-125"
+    ],
+    "price_factor": "0.9477"
+  },
+  {
+    "id": "VEN-025",
+    "legal_name": "Brahmaputra Agro & Sons",
+    "normalised_name": "brahmaputra agro",
+    "tax_id": "361831527",
+    "payment_terms_days": 15,
+    "currency": "BDT",
+    "skus": [
+      "CEM-PCC-50",
+      "CEM-OPC-50"
+    ],
+    "price_factor": "0.9994"
+  },
+  {
+    "id": "VEN-026",
+    "legal_name": "Jamuna Traders Limited",
+    "normalised_name": "jamuna traders",
+    "tax_id": "287835374",
+    "payment_terms_days": 15,
+    "currency": "BDT",
+    "skus": [
+      "SVC-FRT-INL",
+      "SVC-FRT-BRG"
+    ],
+    "price_factor": "0.965"
+  },
+  {
+    "id": "VEN-027",
+    "legal_name": "Surma Traders & Sons",
+    "normalised_name": "surma traders",
+    "tax_id": "798510201",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "PKG-SHR-FILM",
+      "PKG-PPB-50",
+      "PKG-STR-12"
+    ],
+    "price_factor": "1.0298"
+  },
+  {
+    "id": "VEN-028",
+    "legal_name": "Shitalakshya Cement Trading House",
+    "normalised_name": "shitalakshya cement trading house",
+    "tax_id": "677408357",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "RAW-GYP-BULK",
+      "RAW-FLY-BULK",
+      "RAW-LST-BULK",
+      "RAW-CLK-BULK"
+    ],
+    "price_factor": "0.9627"
+  },
+  {
+    "id": "VEN-029",
+    "legal_name": "Brahmaputra Steel Industries Ltd",
+    "normalised_name": "brahmaputra steel industries",
+    "tax_id": "504466621",
+    "payment_terms_days": 45,
+    "currency": "BDT",
+    "skus": [
+      "TEX-YRN-30S",
+      "TEX-YRN-40S"
+    ],
+    "price_factor": "1.006"
+  },
+  {
+    "id": "VEN-030",
+    "legal_name": "Padma Commodities & Sons",
+    "normalised_name": "padma commodities",
+    "tax_id": "933050030",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "PKG-STR-12",
+      "PKG-SHR-FILM",
+      "PKG-PPB-50"
+    ],
+    "price_factor": "0.9758"
+  },
+  {
+    "id": "VEN-031",
+    "legal_name": "Surma Textile Enterprise",
+    "normalised_name": "surma textile enterprise",
+    "tax_id": "607382945",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "SVC-FRT-INL",
+      "SVC-FRT-BRG"
+    ],
+    "price_factor": "1.055"
+  },
+  {
+    "id": "VEN-032",
+    "legal_name": "Shitalakshya Materials Ltd",
+    "normalised_name": "shitalakshya materials",
+    "tax_id": "761256854",
+    "payment_terms_days": 60,
+    "currency": "BDT",
+    "skus": [
+      "CEM-OPC-50",
+      "CEM-PCC-50"
+    ],
+    "price_factor": "0.9991"
+  },
+  {
+    "id": "VEN-033",
+    "legal_name": "Rupsha Commodities Ltd",
+    "normalised_name": "rupsha commodities",
+    "tax_id": "831082953",
+    "payment_terms_days": 45,
+    "currency": "BDT",
+    "skus": [
+      "RAW-LST-BULK",
+      "RAW-FLY-BULK",
+      "RAW-GYP-BULK",
+      "RAW-CLK-BULK"
+    ],
+    "price_factor": "1.0581"
+  },
+  {
+    "id": "VEN-034",
+    "legal_name": "Meghna Textile Ltd",
+    "normalised_name": "meghna textile",
+    "tax_id": "817198347",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "SVC-HND-LBR"
+    ],
+    "price_factor": "1.0196"
+  },
+  {
+    "id": "VEN-035",
+    "legal_name": "Jamuna Supply Corporation",
+    "normalised_name": "jamuna supply",
+    "tax_id": "251351138",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "CEM-PCC-50",
+      "CEM-OPC-50"
+    ],
+    "price_factor": "0.9721"
+  },
+  {
+    "id": "VEN-036",
+    "legal_name": "Surma Industries Limited",
+    "normalised_name": "surma industries",
+    "tax_id": "471720176",
+    "payment_terms_days": 15,
+    "currency": "BDT",
+    "skus": [
+      "SVC-HND-LBR"
+    ],
+    "price_factor": "0.9985"
+  },
+  {
+    "id": "VEN-037",
+    "legal_name": "Brahmaputra Industries Trading Ltd",
+    "normalised_name": "brahmaputra industries trading",
+    "tax_id": "706369190",
+    "payment_terms_days": 45,
+    "currency": "BDT",
+    "skus": [
+      "TEX-YRN-30S",
+      "TEX-YRN-40S"
+    ],
+    "price_factor": "0.9626"
+  },
+  {
+    "id": "VEN-038",
+    "legal_name": "Titas Jute Corporation",
+    "normalised_name": "titas jute",
+    "tax_id": "472970181",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "PKG-STR-12",
+      "PKG-SHR-FILM",
+      "PKG-PPB-50"
+    ],
+    "price_factor": "0.9772"
+  },
+  {
+    "id": "VEN-039",
+    "legal_name": "Jamuna Cement Trading Ltd",
+    "normalised_name": "jamuna cement trading",
+    "tax_id": "433131210",
+    "payment_terms_days": 45,
+    "currency": "BDT",
+    "skus": [
+      "SVC-HND-LBR"
+    ],
+    "price_factor": "1.0519"
+  },
+  {
+    "id": "VEN-040",
+    "legal_name": "Surma Traders Trading Ltd",
+    "normalised_name": "surma traders trading",
+    "tax_id": "611283649",
+    "payment_terms_days": 30,
+    "currency": "BDT",
+    "skus": [
+      "CEM-OPC-50",
+      "CEM-PCC-50"
+    ],
+    "price_factor": "0.9809"
+  }
+]
