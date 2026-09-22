@@ -1,0 +1,459 @@
+{
+  "documents": 500,
+  "routing": {
+    "cleared": 304,
+    "cleared_share": 0.608,
+    "by_reason": {
+      "cleared": 304,
+      "check_findings": 178,
+      "quarantined_image_only": 6,
+      "quarantined_unreadable": 2,
+      "extraction_failed": 9,
+      "quarantined_encrypted": 1
+    }
+  },
+  "defects": {
+    "planted": 90,
+    "reached_cleared": 1,
+    "flagged_by_any_check": 88,
+    "recall_any": 0.9778,
+    "by_defect": {
+      "CURRENCY_MISMATCH": {
+        "planted": 11,
+        "caught_by_expected_check": 11,
+        "flagged_by_any_check": 11,
+        "kept_out_of_cleared": 11
+      },
+      "DUPLICATE_EXACT": {
+        "planted": 11,
+        "caught_by_expected_check": 11,
+        "flagged_by_any_check": 11,
+        "kept_out_of_cleared": 11
+      },
+      "DUPLICATE_NEAR": {
+        "planted": 11,
+        "caught_by_expected_check": 10,
+        "flagged_by_any_check": 10,
+        "kept_out_of_cleared": 10
+      },
+      "NO_DELIVERY": {
+        "planted": 11,
+        "caught_by_expected_check": 11,
+        "flagged_by_any_check": 11,
+        "kept_out_of_cleared": 11
+      },
+      "PRICE_ABOVE_HISTORY": {
+        "planted": 11,
+        "caught_by_expected_check": 11,
+        "flagged_by_any_check": 11,
+        "kept_out_of_cleared": 11
+      },
+      "PRICE_ABOVE_PO": {
+        "planted": 12,
+        "caught_by_expected_check": 11,
+        "flagged_by_any_check": 11,
+        "kept_out_of_cleared": 12
+      },
+      "QTY_OVER_DELIVERY": {
+        "planted": 12,
+        "caught_by_expected_check": 12,
+        "flagged_by_any_check": 12,
+        "kept_out_of_cleared": 12
+      },
+      "TAX_MISMATCH": {
+        "planted": 11,
+        "caught_by_expected_check": 11,
+        "flagged_by_any_check": 11,
+        "kept_out_of_cleared": 11
+      }
+    }
+  },
+  "per_check": {
+    "THREE_WAY_MATCH": {
+      "fired": 66,
+      "fired_on_its_own_defects": 45,
+      "defects_it_owns": 46,
+      "recall_strict": 0.9783
+    },
+    "PRICE_VARIANCE": {
+      "fired": 96,
+      "fired_on_its_own_defects": 11,
+      "defects_it_owns": 11,
+      "recall_strict": 1.0
+    },
+    "DUPLICATE_INVOICE": {
+      "fired": 21,
+      "fired_on_its_own_defects": 21,
+      "defects_it_owns": 22,
+      "recall_strict": 0.9545
+    },
+    "TAX_ARITHMETIC": {
+      "fired": 11,
+      "fired_on_its_own_defects": 11,
+      "defects_it_owns": 11,
+      "recall_strict": 1.0
+    }
+  },
+  "clean_invoices": {
+    "checked": 393,
+    "with_a_failed_check": 58,
+    "false_positive_rate": 0.1476,
+    "routed_only_because_a_check_abstained": 32,
+    "false_positives_by_rule": {
+      "PRICE_VARIANCE/above_history": 60
+    }
+  },
+  "false_positives": [
+    {
+      "document_id": "INV-0072",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: CEM-PCC-50 at 479.58 against a median of 469.28 over 7 earlier orders, 2.2% above it; robust z 5.56 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0242",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: TEX-YRN-30S at 378.52 against a median of 361.61 over 10 earlier orders, 4.7% above it; robust z 5.11 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0256",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: SVC-HND-LBR at 174.19 against a median of 168.20 over 12 earlier orders, 3.6% above it; robust z 3.73 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0376",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: STL-GI-SHEET at 1099.55 against a median of 1078.51 over 7 earlier orders, 2.0% above it; robust z 3.98 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0341",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: SVC-HND-LBR at 187.48 against a median of 180.51 over 9 earlier orders, 3.9% above it; robust z 8.71 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0123",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: TEX-YRN-30S at 364.45 against a median of 352.99 over 5 earlier orders, 3.2% above it; robust z 6.13 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0124",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: TEX-YRN-30S at 364.45 against a median of 352.99 over 5 earlier orders, 3.2% above it; robust z 6.13 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0316",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: RAW-FLY-BULK at 2233.55 against a median of 2146.69 over 6 earlier orders, 4.0% above it; robust z 4.53 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0241",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: TEX-YRN-30S at 367.88 against a median of 361.13 over 6 earlier orders, 1.9% above it; robust z 3.67 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0455",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: TEX-YRN-30S at 372.70 against a median of 360.61 over 5 earlier orders, 3.4% above it; robust z 8.96 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0068",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: STL-BIL-125 at 71169.99 against a median of 67919.01 over 8 earlier orders, 4.8% above it; robust z 5.46 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0439",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: STL-BIL-125 at 72002.96 against a median of 68583.60 over 11 earlier orders, 5.0% above it; robust z 4.23 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0098",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: STL-BIL-125 at 69725.54 against a median of 67336.97 over 5 earlier orders, 3.5% above it; robust z 4.25 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0311",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: SVC-HND-LBR at 188.70 against a median of 180.81 over 10 earlier orders, 4.4% above it; robust z 7.34 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0446",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: STL-BIL-125 at 65278.41 against a median of 63862.60 over 8 earlier orders, 2.2% above it; robust z 5.43 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0448",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: CEM-PCC-50 at 502.09 against a median of 482.63 over 9 earlier orders, 4.0% above it; robust z 5.01 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0430",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: CEM-PCC-50 at 504.88 against a median of 482.40 over 8 earlier orders, 4.7% above it; robust z 6.13 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0372",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: STL-ROD-12 at 81103.23 against a median of 78811.24 over 7 earlier orders, 2.9% above it; robust z 3.56 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0396",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: SVC-HND-LBR at 189.50 against a median of 181.07 over 10 earlier orders, 4.7% above it; robust z 7.68 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0283",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: RAW-GYP-BULK at 6189.97 against a median of 5966.84 over 9 earlier orders, 3.7% above it; robust z 3.92 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0033",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: STL-BIL-125 at 66506.92 against a median of 63928.99 over 9 earlier orders, 4.0% above it; robust z 7.33 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0300",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: TEX-YRN-40S at 444.20 against a median of 427.98 over 9 earlier orders, 3.8% above it; robust z 3.88 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0359",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: CEM-OPC-50 at 531.77 against a median of 505.99 over 6 earlier orders, 5.1% above it; robust z 15.74 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0061",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: RAW-FLY-BULK at 2264.77 against a median of 2156.23 over 5 earlier orders, 5.0% above it; robust z 5.13 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0254",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: SVC-FRT-BRG at 649.79 against a median of 628.73 over 11 earlier orders, 3.3% above it; robust z 3.92 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0005",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: CEM-PCC-50 at 539.45 against a median of 517.26 over 9 earlier orders, 4.3% above it; robust z 12.27 exceeds 3.5.",
+        "PRICE_VARIANCE/above_history: Line 2: CEM-OPC-50 at 557.88 against a median of 542.54 over 7 earlier orders, 2.8% above it; robust z 6.51 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0055",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: STL-GI-SHEET at 1078.47 against a median of 1035.32 over 8 earlier orders, 4.2% above it; robust z 8.57 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0246",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: RAW-CLK-BULK at 10292.14 against a median of 9909.96 over 5 earlier orders, 3.9% above it; robust z 7.50 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0248",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: CEM-OPC-50 at 568.75 against a median of 543.37 over 10 earlier orders, 4.7% above it; robust z 3.94 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0158",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: STL-BIL-125 at 72159.06 against a median of 69968.52 over 6 earlier orders, 3.1% above it; robust z 6.21 exceeds 3.5.",
+        "PRICE_VARIANCE/above_history: Line 3: STL-ROD-12 at 89179.01 against a median of 86954.75 over 5 earlier orders, 2.6% above it; robust z 3.81 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0368",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: RAW-CLK-BULK at 10351.90 against a median of 9912.72 over 6 earlier orders, 4.4% above it; robust z 3.61 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0132",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: STL-GI-SHEET at 1075.05 against a median of 1036.45 over 9 earlier orders, 3.7% above it; robust z 4.48 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0167",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: CEM-PCC-50 at 505.88 against a median of 483.92 over 10 earlier orders, 4.5% above it; robust z 4.03 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0133",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: STL-GI-SHEET at 1075.05 against a median of 1036.45 over 9 earlier orders, 3.7% above it; robust z 4.48 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0367",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: RAW-CLK-BULK at 10351.90 against a median of 9912.72 over 6 earlier orders, 4.4% above it; robust z 3.61 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0036",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: PKG-PPB-50 at 19.48 against a median of 18.67 over 9 earlier orders, 4.3% above it; robust z 6.07 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0217",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: TEX-YRN-40S at 430.59 against a median of 416.82 over 5 earlier orders, 3.3% above it; robust z 6.11 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0057",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: RAW-FLY-BULK at 2521.80 against a median of 2460.07 over 7 earlier orders, 2.5% above it; robust z 4.63 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0319",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: PKG-STR-12 at 138.18 against a median of 131.26 over 8 earlier orders, 5.3% above it; robust z 6.44 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0176",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: TEX-YRN-40S at 438.04 against a median of 418.34 over 5 earlier orders, 4.7% above it; robust z 6.99 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0183",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 3: PKG-SHR-FILM at 238.59 against a median of 229.80 over 7 earlier orders, 3.8% above it; robust z 7.14 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0016",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: STL-BIL-125 at 67312.03 against a median of 64166.06 over 9 earlier orders, 4.9% above it; robust z 4.34 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0171",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: SVC-FRT-BRG at 654.62 against a median of 629.86 over 8 earlier orders, 3.9% above it; robust z 9.23 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0017",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: STL-BIL-125 at 67312.03 against a median of 64166.06 over 9 earlier orders, 4.9% above it; robust z 4.34 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0429",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: PKG-SHR-FILM at 237.91 against a median of 230.45 over 7 earlier orders, 3.2% above it; robust z 7.74 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0159",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: CEM-PCC-50 at 505.86 against a median of 490.24 over 7 earlier orders, 3.2% above it; robust z 4.77 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0360",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: JUT-HES-BTC at 76.20 against a median of 73.45 over 7 earlier orders, 3.7% above it; robust z 5.01 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0424",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: SVC-HND-LBR at 188.44 against a median of 180.16 over 5 earlier orders, 4.6% above it; robust z 46.54 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0101",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: SVC-FRT-BRG at 659.71 against a median of 630.16 over 9 earlier orders, 4.7% above it; robust z 9.10 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0302",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: SVC-FRT-BRG at 656.76 against a median of 631.26 over 10 earlier orders, 4.0% above it; robust z 3.98 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0365",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: PKG-PPB-50 at 19.06 against a median of 18.57 over 8 earlier orders, 2.6% above it; robust z 4.41 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0075",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: PKG-SHR-FILM at 236.42 against a median of 230.63 over 7 earlier orders, 2.5% above it; robust z 4.71 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0408",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: TEX-YRN-30S at 386.87 against a median of 367.88 over 5 earlier orders, 5.2% above it; robust z 3.53 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0116",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: STL-ROD-10 at 85149.77 against a median of 81574.56 over 8 earlier orders, 4.4% above it; robust z 4.14 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0111",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: SVC-HND-LBR at 195.69 against a median of 188.44 over 10 earlier orders, 3.8% above it; robust z 4.84 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0386",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 2: PKG-STR-12 at 148.27 against a median of 140.55 over 8 earlier orders, 5.5% above it; robust z 3.83 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0437",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 1: CEM-OPC-50 at 548.19 against a median of 524.94 over 13 earlier orders, 4.4% above it; robust z 4.15 exceeds 3.5."
+      ]
+    },
+    {
+      "document_id": "INV-0357",
+      "findings": [
+        "PRICE_VARIANCE/above_history: Line 3: RAW-FLY-BULK at 2548.05 against a median of 2467.13 over 6 earlier orders, 3.3% above it; robust z 5.54 exceeds 3.5."
+      ]
+    }
+  ],
+  "price_variance_min_pct": "0"
+}

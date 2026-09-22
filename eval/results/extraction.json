@@ -1,0 +1,41 @@
+{
+  "provider": "offline",
+  "reader_version": "rules-v1",
+  "documents": 500,
+  "readable": 491,
+  "per_field_accuracy": {
+    "invoice_number": 1.0,
+    "vendor": 1.0,
+    "vendor_tax_id": 1.0,
+    "invoice_date": 1.0,
+    "due_date": 1.0,
+    "purchase_order_ref": 1.0,
+    "currency": 1.0,
+    "line_count": 1.0,
+    "line_items": 0.9817,
+    "subtotal": 1.0,
+    "tax_total": 1.0,
+    "total": 1.0
+  },
+  "v1_reader_only": {
+    "persisted_correct": 482,
+    "quarantined": 9,
+    "persisted_wrong": 9
+  },
+  "v2_reader_plus_validators": {
+    "persisted_correct": 482,
+    "quarantined": 9,
+    "routed_to_review": 9
+  },
+  "v1_wrong_records": [
+    "INV-0093",
+    "INV-0173",
+    "INV-0174",
+    "INV-0252",
+    "INV-0264",
+    "INV-0294",
+    "INV-0338",
+    "INV-0433",
+    "INV-0458"
+  ]
+}

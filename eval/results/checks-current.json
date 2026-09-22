@@ -1,0 +1,106 @@
+{
+  "documents": 500,
+  "routing": {
+    "cleared": 359,
+    "cleared_share": 0.718,
+    "by_reason": {
+      "cleared": 359,
+      "check_findings": 123,
+      "quarantined_image_only": 6,
+      "quarantined_unreadable": 2,
+      "extraction_failed": 9,
+      "quarantined_encrypted": 1
+    }
+  },
+  "defects": {
+    "planted": 90,
+    "reached_cleared": 1,
+    "flagged_by_any_check": 88,
+    "recall_any": 0.9778,
+    "by_defect": {
+      "CURRENCY_MISMATCH": {
+        "planted": 11,
+        "caught_by_expected_check": 11,
+        "flagged_by_any_check": 11,
+        "kept_out_of_cleared": 11
+      },
+      "DUPLICATE_EXACT": {
+        "planted": 11,
+        "caught_by_expected_check": 11,
+        "flagged_by_any_check": 11,
+        "kept_out_of_cleared": 11
+      },
+      "DUPLICATE_NEAR": {
+        "planted": 11,
+        "caught_by_expected_check": 10,
+        "flagged_by_any_check": 10,
+        "kept_out_of_cleared": 10
+      },
+      "NO_DELIVERY": {
+        "planted": 11,
+        "caught_by_expected_check": 11,
+        "flagged_by_any_check": 11,
+        "kept_out_of_cleared": 11
+      },
+      "PRICE_ABOVE_HISTORY": {
+        "planted": 11,
+        "caught_by_expected_check": 11,
+        "flagged_by_any_check": 11,
+        "kept_out_of_cleared": 11
+      },
+      "PRICE_ABOVE_PO": {
+        "planted": 12,
+        "caught_by_expected_check": 11,
+        "flagged_by_any_check": 11,
+        "kept_out_of_cleared": 12
+      },
+      "QTY_OVER_DELIVERY": {
+        "planted": 12,
+        "caught_by_expected_check": 12,
+        "flagged_by_any_check": 12,
+        "kept_out_of_cleared": 12
+      },
+      "TAX_MISMATCH": {
+        "planted": 11,
+        "caught_by_expected_check": 11,
+        "flagged_by_any_check": 11,
+        "kept_out_of_cleared": 11
+      }
+    }
+  },
+  "per_check": {
+    "THREE_WAY_MATCH": {
+      "fired": 66,
+      "fired_on_its_own_defects": 45,
+      "defects_it_owns": 46,
+      "recall_strict": 0.9783
+    },
+    "PRICE_VARIANCE": {
+      "fired": 18,
+      "fired_on_its_own_defects": 11,
+      "defects_it_owns": 11,
+      "recall_strict": 1.0
+    },
+    "DUPLICATE_INVOICE": {
+      "fired": 21,
+      "fired_on_its_own_defects": 21,
+      "defects_it_owns": 22,
+      "recall_strict": 0.9545
+    },
+    "TAX_ARITHMETIC": {
+      "fired": 11,
+      "fired_on_its_own_defects": 11,
+      "defects_it_owns": 11,
+      "recall_strict": 1.0
+    }
+  },
+  "clean_invoices": {
+    "checked": 393,
+    "with_a_failed_check": 0,
+    "false_positive_rate": 0.0,
+    "routed_only_because_a_check_abstained": 35,
+    "false_positives_by_rule": {}
+  },
+  "false_positives": [],
+  "price_variance_min_pct": "10.0"
+}
