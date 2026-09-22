@@ -147,6 +147,9 @@ h1, h2, h3 { margin: 0; }
 }
 .textarea { padding: 8px 10px; min-height: 72px; resize: vertical; width: 100%; line-height: 1.45; }
 .input:hover, .select:hover, .textarea:hover { border-color: var(--ink-3); }
+/* A select sizes to its longest option unless told otherwise; keep it in its column. */
+.select { max-width: 100%; min-width: 0; }
+.lab .field .select { width: 100%; }
 .field { display: grid; gap: 6px; }
 .help { font-size: 12.5px; color: var(--ink-3); }
 .error-text { font-size: 12.5px; color: var(--red); }
