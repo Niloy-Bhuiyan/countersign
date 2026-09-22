@@ -50,6 +50,9 @@ select = ["E", "F", "I", "UP", "B"]
 "data/catalogue.py" = ["E501"]
 # The report generator writes markdown tables; their header rows run long.
 "eval/run.py" = ["E501"]
+# SVG markup and capture calls read best one element per line.
+"scripts/readme_art.py" = ["E501"]
+"scripts/readme_media.py" = ["E501"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
