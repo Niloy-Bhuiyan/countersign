@@ -16,6 +16,7 @@
   "counts": {
     "vendors": 40,
     "purchase_orders": 460,
+    "historical_orders": 480,
     "deliveries": 467,
     "invoices": 500,
     "defects": 90
