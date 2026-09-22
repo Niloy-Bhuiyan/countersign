@@ -1,6 +1,5 @@
 "use client";
 
-import { Banknote, BarChart3, BadgeCheck, FileSearch, XCircle } from "lucide-react";
 import { useJson } from "@/components/api";
 import { NEXT_STEP, REASONS, shortLabel } from "@/components/explain";
 import { compact, money } from "@/components/format";
@@ -56,7 +55,7 @@ function Months({ data }: { data: { period: string; value: string }[] }) {
         const y = h - pb - (h - pb - pt) * t;
         return (
           <g key={t}>
-            <line x1={pl} x2={w} y1={y} y2={y} stroke="#e2e8f0" />
+            <line x1={pl} x2={w} y1={y} y2={y} stroke="#e7e5e0" />
             <text x={pl - 8} y={y + 4} textAnchor="end">{compact(String(Math.round(max * t)))}</text>
           </g>
         );
@@ -67,7 +66,7 @@ function Months({ data }: { data: { period: string; value: string }[] }) {
         const [year, month] = d.period.split("-");
         return (
           <g key={d.period}>
-            <rect x={x} y={h - pb - bh} width={band * 0.64} height={bh} rx={4} fill="#2563eb">
+            <rect x={x} y={h - pb - bh} width={band * 0.64} height={bh} rx={6} fill="#0a0a0a">
               <title>{`${names[Number(month) - 1]} ${year}: BDT ${money(d.value)}`}</title>
             </rect>
             <text x={x + band * 0.32} y={h - 8} textAnchor="middle">{names[Number(month) - 1]} {year.slice(2)}</text>
@@ -84,10 +83,10 @@ export default function Reports() {
   if (!s) return <div className="page"><p className="muted">Loading the report…</p></div>;
 
   const cards = [
-    { icon: FileSearch, tone: "tone-primary", label: "Total invoiced", value: `BDT ${compact(s.spendBDT)}`, meaning: `Across ${s.documents} invoices.`, tip: "The combined value of every invoice received, in Bangladeshi taka (M = million). Invoices in other currencies aren't added in." },
-    { icon: Banknote, tone: "tone-warn", label: "Money on hold", value: `BDT ${compact(s.atRiskBDT)}`, meaning: `${s.needsReview} invoices waiting for a decision.`, tip: "Invoices that need a closer look. None of this money is paid until someone approves." },
-    { icon: XCircle, tone: "tone-bad", label: "Problems found", value: String(s.withFindings), meaning: "Invoices where at least one check failed.", tip: "Overcharges, billing for goods not delivered, duplicates, wrong VAT, and so on." },
-    { icon: BadgeCheck, tone: "tone-ok", label: "Passed every check", value: `${((s.cleared / s.documents) * 100).toFixed(0)}%`, meaning: `${s.cleared} invoices, awaiting approval.`, tip: "The share of invoices with nothing wrong. They still wait for a person to approve them." },
+    { label: "Total invoiced", value: `BDT ${compact(s.spendBDT)}`, tip: `The combined value of all ${s.documents} invoices, in Bangladeshi taka (M = million). Other currencies aren't added in.` },
+    { label: "On hold", value: `BDT ${compact(s.atRiskBDT)}`, tip: `${s.needsReview} invoices need a closer look. None of this is paid until someone approves.` },
+    { label: "Problems found", value: String(s.withFindings), tip: "Invoices where at least one check failed: overcharges, missing deliveries, duplicates, wrong VAT." },
+    { label: "Passed every check", value: `${((s.cleared / s.documents) * 100).toFixed(0)}%`, tip: `${s.cleared} invoices with nothing wrong. They still wait for a person to approve them.` },
   ];
 
   return (
@@ -95,52 +94,45 @@ export default function Reports() {
       <div className="page-head">
         <div>
           <h1>Reports</h1>
-          <p>The big picture for a finance manager: how much came in, how much is on hold and why, and which suppliers it involves.</p>
+          <p>How much came in, how much is on hold, and why.</p>
         </div>
       </div>
 
       <div className="grid-4">
-        {cards.map(({ icon: Icon, tone, label, value, meaning, tip }) => (
+        {cards.map(({ label, value, tip }) => (
           <div className="card stat" key={label}>
-            <div className="stat-top"><span className={`stat-icon ${tone}`}><Icon size={18} aria-hidden /></span>{label}<Tip>{tip}</Tip></div>
+            <div className="stat-top">{label}<Tip>{tip}</Tip></div>
             <div className="stat-value">{value}</div>
-            <div className="stat-meaning">{meaning}</div>
           </div>
         ))}
       </div>
 
       <section className="card section">
-        <div className="card-head">
-          <BarChart3 size={18} className="muted" aria-hidden />
-          <div>
-            <h2>Invoices received each month</h2>
-            <p className="card-sub">Total value of supplier invoices by the month they were issued, in BDT. Hover a bar for the exact amount.</p>
-          </div>
-        </div>
+        <div className="card-head"><div><h2>Invoiced per month</h2><p className="card-sub">BDT</p></div></div>
         <div className="card-pad"><Months data={s.spendByMonth} /></div>
       </section>
 
       <div className="grid-2 section">
         <section className="card">
-          <div className="card-head"><div><h2>Which suppliers have money on hold</h2><p className="card-sub">The eight suppliers with the most invoice value waiting for a decision.</p></div></div>
+          <div className="card-head"><h2>On hold, by supplier</h2></div>
           <div className="card-pad"><Bars data={s.heldByVendor} format="money" tone="bad" /></div>
         </section>
         <section className="card">
-          <div className="card-head"><div><h2>What we buy</h2><p className="card-sub">Total invoiced by type of goods or service.</p></div></div>
+          <div className="card-head"><h2>Spend by category</h2></div>
           <div className="card-pad"><Bars data={s.spendByCategory} format="money" /></div>
         </section>
       </div>
 
       <div className="grid-2 section">
         <section className="card">
-          <div className="card-head"><div><h2>Most common problems</h2><p className="card-sub">How many invoices each kind of problem was found on.</p></div></div>
+          <div className="card-head"><h2>Most common problems</h2></div>
           <div className="card-pad"><Bars data={s.findingsByRule} format="count" name={shortLabel} tone="bad" /></div>
         </section>
         <section className="card">
-          <div className="card-head"><div><h2>What the system suggests</h2><p className="card-sub">The next step suggested for each invoice. A person makes the actual decision.</p></div></div>
+          <div className="card-head"><h2>Suggested next steps</h2></div>
           <div className="card-pad stack">
             <Bars data={s.actions} format="count" name={(k) => NEXT_STEP[k]?.what ?? k} />
-            <p className="small" style={{ fontWeight: 700, marginTop: 8 }}>Why some invoices couldn&rsquo;t be checked fully</p>
+            <p className="small muted" style={{ marginTop: 12 }}>Couldn&rsquo;t fully check</p>
             <Bars
               data={[...s.reasons.filter((r) => r.label !== "cleared" && r.label !== "check_findings"), ...s.abstentionsByRule]}
               format="count"

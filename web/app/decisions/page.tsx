@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertOctagon, CheckCircle2, Download, History, PauseCircle, Undo2 } from "lucide-react";
+import { Download, History } from "lucide-react";
 import Link from "next/link";
 import { useDecisions, useWorkspace } from "@/components/api";
 import { NEXT_STEP } from "@/components/explain";
@@ -22,10 +22,10 @@ export default function Decisions() {
   const overruled = current.filter((e) => e.overrules_recommendation).length;
 
   const stats = [
-    { icon: CheckCircle2, tone: "tone-ok", label: "Approved", value: count("approved"), meaning: "Checked and cleared for payment." },
-    { icon: PauseCircle, tone: "tone-warn", label: "On hold", value: count("held"), meaning: "Waiting for the supplier to fix something." },
-    { icon: AlertOctagon, tone: "tone-bad", label: "Escalated", value: count("escalated"), meaning: "Sent to the finance controller." },
-    { icon: Undo2, tone: "tone-muted", label: "Went against the suggestion", value: overruled, meaning: "Each one has a written reason." },
+    { tone: "ok", label: "Approved", value: count("approved") },
+    { tone: "warn", label: "On hold", value: count("held") },
+    { tone: "bad", label: "Escalated", value: count("escalated") },
+    { tone: "muted", label: "Against the suggestion", value: overruled },
   ];
 
   return (
@@ -33,34 +33,30 @@ export default function Decisions() {
       <div className="page-head">
         <div>
           <h1>Decision history</h1>
-          <p>
-            Every decision made in your workspace, newest first. Entries are never edited or deleted; undoing a
-            decision adds a new entry. This is the record an auditor would ask for.
-          </p>
+          <p>Every decision, newest first. Nothing is ever edited or deleted.</p>
         </div>
         {ws && log.length > 0 && (
           <div className="end">
-            <a className="btn" href={`/api/workspaces/${ws}/decisions.csv`}><Download size={16} aria-hidden /> Download as CSV</a>
+            <a className="btn" href={`/api/workspaces/${ws}/decisions.csv`}><Download size={16} aria-hidden /> CSV</a>
           </div>
         )}
       </div>
 
       <div className="grid-4">
-        {stats.map(({ icon: Icon, tone, label, value, meaning }) => (
+        {stats.map(({ tone, label, value }) => (
           <div className="card stat" key={label}>
-            <div className="stat-top"><span className={`stat-icon ${tone}`}><Icon size={18} aria-hidden /></span>{label}</div>
+            <div className="stat-top"><span className={`dot dot-${tone}`} aria-hidden />{label}</div>
             <div className="stat-value">{data ? value : "…"}</div>
-            <div className="stat-meaning">{meaning}</div>
           </div>
         ))}
       </div>
 
       <section className="card section">
-        <div className="card-head"><History size={18} className="muted" aria-hidden /><h2>All decisions</h2></div>
+        <div className="card-head"><h2>All decisions</h2></div>
         {error && <p className="error-box" style={{ margin: 16 }}>{error}</p>}
         {data && log.length === 0 && (
           <Empty icon={History} title="No decisions yet">
-            <p className="small">Open an invoice, then choose Approve, Put on hold or Escalate at the bottom.</p>
+            <p className="small">Open an invoice and choose Approve, Hold or Escalate.</p>
             <Link className="btn btn-primary btn-sm" href="/review/">Go to review</Link>
           </Empty>
         )}
@@ -73,8 +69,8 @@ export default function Decisions() {
                   <th>Invoice</th>
                   <th>Decision</th>
                   <th>By</th>
-                  <th>System suggested</th>
-                  <th>Reason</th>
+                  <th>Suggested</th>
+                  <th>Note</th>
                 </tr>
               </thead>
               <tbody>
@@ -88,7 +84,7 @@ export default function Decisions() {
                       <td>{e.reviewer}</td>
                       <td className="small">
                         {NEXT_STEP[e.recommended_action]?.what ?? e.recommended_action}
-                        {e.overrules_recommendation && <div className="xs" style={{ color: "var(--warn)", fontWeight: 600 }}>Went against this</div>}
+                        {e.overrules_recommendation && <div className="xs" style={{ color: "var(--warn)", fontWeight: 500 }}>Overruled</div>}
                       </td>
                       <td className="small soft">{e.note || "—"}</td>
                     </tr>
