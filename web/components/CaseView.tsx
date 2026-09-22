@@ -1,23 +1,41 @@
 "use client";
 
+import {
+  AlertTriangle,
+  Building2,
+  Calculator,
+  Calendar,
+  Check,
+  CheckCircle2,
+  CircleHelp,
+  Copy,
+  Eye,
+  EyeOff,
+  FileText,
+  Hash,
+  Lightbulb,
+  PackageCheck,
+  TrendingUp,
+  XCircle,
+} from "lucide-react";
 import { useState } from "react";
 import type { DecisionEvent } from "./api";
 import Decision from "./Decision";
+import {
+  CHECK_ORDER,
+  CHECKS,
+  findingSentence,
+  NEXT_STEP,
+  passSentence,
+  REASONS,
+  type Result,
+  statusOf,
+} from "./explain";
 import { date, money, quantity } from "./format";
-import { ACTIONS, CHECKS, Glyph, REASONS, ruleLabel } from "./labels";
 import PriceHistory, { type History } from "./PriceHistory";
+import { Pill, StatusPill, Tip } from "./ui";
 
-export type Result = {
-  check_code: string;
-  outcome: "passed" | "failed" | "abstained";
-  rule: string;
-  line_no: number | null;
-  observed: string | null;
-  expected: string | null;
-  tolerance: string | null;
-  explanation: string;
-  evidence: Record<string, string[]>;
-};
+export type { Result };
 
 export type CaseDetail = {
   id: string;
@@ -32,9 +50,10 @@ export type CaseDetail = {
   state: string;
   reason: string | null;
   action: string;
+  failed: string[];
+  abstained: string[];
   history: string[];
   origin?: string;
-  originalFilename?: string;
   note?: string;
   extraction: {
     provider: string;
@@ -81,74 +100,93 @@ export type CaseDetail = {
   };
 };
 
-const STATE_WORD: Record<string, string> = {
-  received: "Received",
-  extracted: "Read",
-  checked: "Checked",
-  cleared: "Cleared every check",
-  needs_review: "Needs review",
+const CHECK_ICONS: Record<string, React.ElementType> = {
+  THREE_WAY_MATCH: PackageCheck,
+  PRICE_VARIANCE: TrendingUp,
+  DUPLICATE_INVOICE: Copy,
+  TAX_ARITHMETIC: Calculator,
 };
 
-function cmp(a: string | null | undefined, b: string | null | undefined): number {
-  if (a == null || b == null) return 0;
-  const x = Number(a);
-  const y = Number(b);
-  return x === y ? 0 : x > y ? 1 : -1;
+function Progress({ decided }: { decided: boolean }) {
+  const steps = [
+    { label: "Received", done: true },
+    { label: "Read", done: true },
+    { label: "Checked", done: true },
+    { label: decided ? "Decided" : "Your decision", done: decided },
+  ];
+  return (
+    <div className="progress" aria-label="Progress">
+      {steps.map((s, i) => (
+        <span key={s.label} style={{ display: "inline-flex", alignItems: "center" }}>
+          {i > 0 && <span className="line" aria-hidden />}
+          <span className="p">
+            <span className={`dot${s.done ? "" : " now"}`} aria-hidden>
+              {s.done ? <Check size={12} /> : <span style={{ fontSize: 11, fontWeight: 800 }}>{i + 1}</span>}
+            </span>
+            {s.label}
+          </span>
+        </span>
+      ))}
+    </div>
+  );
 }
 
 function Lines({ c }: { c: CaseDetail }) {
   const inv = c.invoice!;
   const order = c.order;
   return (
-    <div className="sheet-wrap">
-      <table className="sheet">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th className="num">Ordered</th>
-            <th className="num">Received</th>
-            <th className="num">Billed</th>
-            <th className="num">Order price</th>
-            <th className="num">Billed price</th>
-            <th className="num">Line total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {inv.lines.map((line) => {
-            const po = order?.lines.find((l) => l.sku === line.sku);
-            const over = po ? cmp(line.quantity, po.received) > 0 : false;
-            const dearer = po ? Number(line.unitPrice) > Number(po.unitPrice) * 1.02 : false;
-            return (
-              <tr key={line.no}>
-                <td>
-                  <span className="id">{line.sku ?? "no SKU"}</span>
-                  <div className="small soft">{line.description}</div>
-                </td>
-                <td className="num">{po ? quantity(po.quantity) : "—"}</td>
-                <td className="num">{po ? quantity(po.received) : "—"}</td>
-                <td className={`num${over ? " off" : ""}`}>
-                  {quantity(line.quantity)} <span className="muted small">{line.uom}</span>
-                </td>
-                <td className="num">{po ? money(po.unitPrice) : "—"}</td>
-                <td className={`num${dearer ? " off" : ""}`}>{money(line.unitPrice)}</td>
-                <td className="num">{money(line.lineTotal)}</td>
-              </tr>
-            );
-          })}
-          <tr className="total">
-            <td colSpan={6} className="num muted">Subtotal</td>
-            <td className="num">{money(inv.subtotal)}</td>
-          </tr>
-          <tr className="total">
-            <td colSpan={6} className="num muted">VAT</td>
-            <td className="num">{money(inv.tax)}</td>
-          </tr>
-          <tr className="grand">
-            <td colSpan={6} className="num">Total payable</td>
-            <td className="num">{money(inv.total, c.currency)}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div className="card">
+      <div className="card-head">
+        <FileText size={18} className="muted" aria-hidden />
+        <div>
+          <h3>Invoice compared with the purchase order</h3>
+          <p className="card-sub">
+            {order
+              ? `Purchase order ${order.number}, raised ${date(order.orderedAt)}. ${order.deliveries.length} delivery note(s) on record.`
+              : "No purchase order found for this invoice."}{" "}
+            Cells in red don&rsquo;t match.
+          </p>
+        </div>
+      </div>
+      <div className="table-wrap">
+        <table className="t">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th className="r">Ordered</th>
+              <th className="r">Delivered</th>
+              <th className="r">Billed</th>
+              <th className="r">Agreed price</th>
+              <th className="r">Price charged</th>
+              <th className="r">Line total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {inv.lines.map((line) => {
+              const po = order?.lines.find((l) => l.sku === line.sku);
+              const over = po ? Number(line.quantity) > Number(po.received) : false;
+              const dearer = po ? Number(line.unitPrice) > Number(po.unitPrice) * 1.02 : false;
+              return (
+                <tr key={line.no}>
+                  <td>
+                    <div style={{ fontWeight: 600 }}>{line.description}</div>
+                    <div className="xs muted mono">{line.sku ?? "no item code"}</div>
+                  </td>
+                  <td className="r">{po ? quantity(po.quantity) : "—"}</td>
+                  <td className="r">{po ? quantity(po.received) : "—"}</td>
+                  <td className={`r${over ? " flag" : ""}`}>{quantity(line.quantity)} <span className="xs muted">{line.uom}</span></td>
+                  <td className="r">{po ? money(po.unitPrice) : "—"}</td>
+                  <td className={`r${dearer ? " flag" : ""}`}>{money(line.unitPrice)}</td>
+                  <td className="r">{money(line.lineTotal)}</td>
+                </tr>
+              );
+            })}
+            <tr><td colSpan={6} className="r muted">Subtotal</td><td className="r">{money(inv.subtotal)}</td></tr>
+            <tr><td colSpan={6} className="r muted">VAT</td><td className="r">{money(inv.tax)}</td></tr>
+            <tr className="total"><td colSpan={6} className="r">Amount to pay</td><td className="r">{c.currency} {money(inv.total)}</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -168,174 +206,195 @@ export default function CaseView({
   documentUrl: string;
   preset?: "approved" | "held" | "escalated" | null;
 }) {
-  const [view, setView] = useState<"paper" | "document">("paper");
-  const rec = c.recommendation;
-  const order = { failed: 0, abstained: 1, passed: 2 } as const;
-  const results = [...c.results].sort((a, b) => order[a.outcome] - order[b.outcome]);
+  const [showDoc, setShowDoc] = useState(false);
+  const latest = events.length ? events[events.length - 1] : null;
+  const decision = latest && latest.decision !== "withdrawn" ? latest.decision : undefined;
+  const status = statusOf(c, decision);
+  const problems = c.results.filter((r) => r.outcome === "failed");
+  const unsure = c.results.filter((r) => r.outcome === "abstained");
+  const unreadable = c.reason && c.reason !== "check_findings";
+  const next = NEXT_STEP[c.action] ?? NEXT_STEP.REVIEW_MANUALLY;
   const history = (c.priceHistory ?? []).filter((h) => h.points.length > 0);
   const previewable = c.format === "pdf" && !["quarantined_unreadable", "quarantined_encrypted"].includes(c.extraction.intake);
+  const itemName = (sku: string) => c.invoice?.lines.find((l) => l.sku === sku)?.description ?? sku;
+
+  const headline = unreadable
+    ? "We couldn't read this invoice"
+    : problems.length
+      ? `${problems.length} problem${problems.length === 1 ? "" : "s"} found`
+      : unsure.length
+        ? "Nothing wrong found, but one check couldn't decide"
+        : "Nothing wrong found";
 
   return (
-    <article>
-      <header className="case-head">
+    <div className="detail">
+      <section className="card detail-head">
         <div>
-          <p className="label">
-            {c.origin === "lab" ? "Lab invoice" : c.origin === "upload" ? "Uploaded invoice" : "Invoice"} · {c.id}
-          </p>
-          <h1 className="title id" style={{ fontFamily: "var(--mono)", fontSize: 26 }}>{c.number ?? "Unread document"}</h1>
-          <p className="vendor">{c.vendor ?? c.invoice?.vendorAsPrinted ?? "Vendor not identified"}</p>
+          <div className="kicker">
+            {c.origin === "lab" ? <Pill tone="info" icon={false}>Your test invoice</Pill>
+              : c.origin === "upload" ? <Pill tone="info" icon={false}>Your upload</Pill> : null}
+            <span>Invoice from</span>
+          </div>
+          <h1>{c.vendor ?? c.invoice?.vendorAsPrinted ?? "Unknown supplier"}</h1>
         </div>
-        <div className="total fig">
-          {c.total ? money(c.total) : "—"}
-          <small>{c.currency}</small>
+        <div className="amount">
+          <div className="l">Amount to pay</div>
+          <div className="v">{c.total ? `${c.currency} ${money(c.total)}` : "—"}</div>
+          <div style={{ marginTop: 6 }}><StatusPill status={status} /></div>
         </div>
         <div className="facts">
-          <span>Order <b className="id">{c.po ?? "—"}</b></span>
-          <span>Dated <b>{date(c.issued)}</b></span>
-          <span>Due <b>{date(c.invoice?.due ?? null)}</b></span>
-          <span className="trail" aria-label="State history">
-            {c.history.map((s, i) => <span key={i}>{STATE_WORD[s] ?? s}</span>)}
-          </span>
+          <span><Hash size={14} aria-hidden /> Invoice <b className="mono">{c.number ?? "unreadable"}</b></span>
+          <span><Building2 size={14} aria-hidden /> Purchase order <b className="mono">{c.po ?? "—"}</b></span>
+          <span><Calendar size={14} aria-hidden /> Issued {date(c.issued)}</span>
+          <span><Calendar size={14} aria-hidden /> Due {date(c.invoice?.due ?? null)}</span>
         </div>
-      </header>
+        <Progress decided={Boolean(decision)} />
+      </section>
 
-      <div className="switch paper-switch" role="group" aria-label="View">
-        <button aria-pressed={view === "paper"} onClick={() => setView("paper")}>Working paper</button>
-        <button aria-pressed={view === "document"} onClick={() => setView("document")}>
-          Source document <span className="n">{c.format.toUpperCase()}</span>
-        </button>
-      </div>
-
-      {view === "document" ? (
-        <section className="block">
-          {previewable ? (
-            <iframe className="doc-frame" src={documentUrl} title={`Source document ${c.file}`} />
-          ) : (
-            <p className="notice">
-              {c.format !== "pdf"
-                ? "Spreadsheet invoices cannot be previewed in the browser."
-                : `This file cannot be displayed: ${REASONS[c.extraction.intake] ?? c.extraction.intake}.`}{" "}
-              <a href={documentUrl}>Download the original</a>.
-            </p>
+      <section className={`card summary`}>
+        <h2>
+          {unreadable ? <AlertTriangle size={20} color="var(--warn)" aria-hidden />
+            : problems.length ? <XCircle size={20} color="var(--bad)" aria-hidden />
+            : unsure.length ? <CircleHelp size={20} color="var(--warn)" aria-hidden />
+            : <CheckCircle2 size={20} color="var(--ok)" aria-hidden />}
+          {headline}
+        </h2>
+        <ul>
+          {unreadable && (
+            <li><AlertTriangle size={16} color="var(--warn)" aria-hidden />{REASONS[c.reason!]?.long ?? c.reason}</li>
           )}
-          <p className="small muted" style={{ marginTop: 8 }}>
-            Read by {c.extraction.provider} / {c.extraction.version}. Content hash <span className="id">{c.extraction.sha256.slice(0, 16)}…</span>{" "}
-            <a href={documentUrl}>Open the original</a>
-          </p>
-        </section>
-      ) : (
-        <>
-          {c.reason && c.reason !== "check_findings" && (
-            <section className="block">
-              <div className="block-head"><h3>Why this is in review</h3></div>
-              <p className="verdict red">{REASONS[c.reason] ?? c.reason}</p>
-              {c.extraction.failures.length > 0 && (
-                <table className="sheet" style={{ marginTop: 12 }}>
-                  <thead><tr><th>Field</th><th>As printed</th><th>Problem</th></tr></thead>
-                  <tbody>
-                    {c.extraction.failures.map((f, i) => (
-                      <tr key={i}>
-                        <td className="id">{f.field}</td>
-                        <td className="id">{f.printed || "—"}</td>
-                        <td>{f.reason}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </section>
+          {problems.map((r, i) => (
+            <li key={`p${i}`}><XCircle size={16} color="var(--bad)" aria-hidden />{findingSentence(r)}</li>
+          ))}
+          {unsure.map((r, i) => (
+            <li key={`u${i}`}><CircleHelp size={16} color="var(--warn)" aria-hidden />{findingSentence(r)}</li>
+          ))}
+          {!unreadable && problems.length === 0 && unsure.length === 0 && (
+            <li><CheckCircle2 size={16} color="var(--ok)" aria-hidden />All four checks passed. The quantities, prices, tax and invoice number are all as expected.</li>
           )}
+        </ul>
+        <div className="next-step">
+          <Lightbulb size={20} color="var(--primary)" aria-hidden style={{ flex: "none", marginTop: 2 }} />
+          <div>
+            <div className="label">Suggested next step</div>
+            <div className="what">{next.what}</div>
+            <div className="why">{next.why}</div>
+            {c.recommendation && (
+              <details className="tech">
+                <summary>Why this suggestion?</summary>
+                <div className="body">
+                  {c.recommendation.rationale.slice(1).map((s, i) => <p key={i} style={{ margin: "4px 0" }}>{s.text}</p>)}
+                  <p style={{ marginTop: 8 }}>
+                    Drafted by a rule-based assistant ({c.recommendation.agent_version}) that can only read records, never
+                    change them. Every claim above points to a record that exists. You make the decision.
+                  </p>
+                </div>
+              </details>
+            )}
+          </div>
+        </div>
+      </section>
 
-          {rec && (
-            <section className="block">
-              <div className="block-head">
-                <h3>Recommendation</h3>
-                <span className="aside">
-                  {rec.agent_version} · {rec.steps_used} steps · {rec.tool_calls_used} read-only tool calls
-                </span>
-              </div>
-              <p className="verdict">{ACTIONS[rec.action]?.verdict ?? rec.action}</p>
-              <ol className="rationale">
-                {rec.rationale.slice(1).map((s, i) => (
-                  <li key={i}>
-                    {s.text}
-                    {s.cites.length > 0 && <span className="cites">{s.cites.map((x) => `${x.table}:${x.id}`).join("  ")}</span>}
-                  </li>
-                ))}
-              </ol>
-              {(rec.dropped_sentences > 0 || rec.escalated_because) && (
-                <p className="notice" style={{ marginTop: 10 }}>
-                  {rec.dropped_sentences > 0 && `${rec.dropped_sentences} sentence(s) removed because their citations did not verify. `}
-                  {rec.escalated_because && `Escalated because ${rec.escalated_because}.`}
-                </p>
-              )}
-            </section>
-          )}
-
-          {results.length > 0 && (
-            <section className="block">
-              <div className="block-head">
-                <h3>Checks</h3>
-                <span className="aside">Deterministic. No model produced any of these.</span>
-              </div>
-              <div className="checks">
-                {results.map((r, i) => (
-                  <div className="check" key={i}>
-                    <span className={r.outcome === "failed" ? "red" : r.outcome === "passed" ? "green" : "muted"}
-                      aria-label={r.outcome === "abstained" ? "could not judge" : r.outcome}>
-                      <Glyph kind={r.outcome} size={18} />
-                    </span>
-                    <div>
-                      <div className="name">{CHECKS[r.check_code] ?? r.check_code}</div>
-                      {r.rule && <div className="rule">{ruleLabel(`${r.check_code}/${r.rule}`)}</div>}
+      {c.results.length > 0 && (
+        <section className="card">
+          <div className="card-head">
+            <PackageCheck size={18} className="muted" aria-hidden />
+            <div>
+              <h3>The four checks</h3>
+              <p className="card-sub">Each one answers a simple question. None of them uses AI; the rules are fixed and repeatable.</p>
+            </div>
+          </div>
+          <div className="checklist">
+            {CHECK_ORDER.map((code) => {
+              const mine = c.results.filter((r) => r.check_code === code);
+              const failed = mine.filter((r) => r.outcome === "failed");
+              const abstained = mine.filter((r) => r.outcome === "abstained");
+              const tone = failed.length ? "bad" : abstained.length ? "warn" : "ok";
+              const Icon = CHECK_ICONS[code];
+              const said = failed.length ? failed : abstained;
+              return (
+                <div className="check-row" key={code}>
+                  <span className={`ic tone-${tone}`}><Icon size={18} aria-hidden /></span>
+                  <div>
+                    <h4>{CHECKS[code].name}</h4>
+                    <div className="q">{CHECKS[code].question}</div>
+                    <div className="says">
+                      {said.length ? said.map((r, i) => <p key={i}>{findingSentence(r)}</p>) : passSentence(code)}
                     </div>
-                    <div>
-                      <p>{r.explanation}</p>
-                      {(r.observed || r.expected || r.tolerance) && (
-                        <div className="figs">
-                          {r.observed && <span>Observed <b className="fig">{r.observed}</b></span>}
-                          {r.expected && <span>Expected <b className="fig">{r.expected}</b></span>}
-                          {r.tolerance && <span>Tolerance <b className="fig">{r.tolerance}</b></span>}
-                        </div>
-                      )}
-                    </div>
+                    <details className="tech">
+                      <summary>Show the technical details</summary>
+                      <div className="body">
+                        {mine.map((r, i) => (
+                          <p key={i} style={{ margin: "4px 0" }}>
+                            {r.explanation}
+                            {(r.observed || r.expected) && (
+                              <> (found {r.observed ?? "—"}, expected {r.expected ?? "—"}{r.tolerance ? `, allowed difference ${r.tolerance}` : ""})</>
+                            )}
+                          </p>
+                        ))}
+                      </div>
+                    </details>
                   </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {c.invoice && (
-            <section className="block">
-              <div className="block-head">
-                <h3>Against the order and deliveries</h3>
-                {c.order && (
-                  <span className="aside">
-                    Order raised {date(c.order.orderedAt)} · {c.order.deliveries.length} delivery note(s)
-                  </span>
-                )}
-              </div>
-              <Lines c={c} />
-            </section>
-          )}
-
-          {history.length > 0 && (
-            <section className="block">
-              <div className="block-head"><h3>Price against this vendor&rsquo;s history</h3></div>
-              <div style={{ display: "grid", gap: 18 }}>
-                {history.map((h) => <PriceHistory key={h.lineNo} h={h} />)}
-              </div>
-            </section>
-          )}
-        </>
+                  <Pill tone={tone}>{failed.length ? "Problem" : abstained.length ? "Couldn't decide" : "Passed"}</Pill>
+                </div>
+              );
+            })}
+          </div>
+        </section>
       )}
 
+      {c.invoice && <Lines c={c} />}
+
+      {history.length > 0 && (
+        <section className="card card-pad stack">
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+              Is the price normal for this supplier?
+              <Tip>
+                Each blue dot is a price this supplier charged us for the same item on an earlier order. The grey line is
+                their usual price. A price is only flagged if it is above the red line: unusually high <b>and</b> at least
+                10% above usual.
+              </Tip>
+            </h3>
+            <p className="card-sub">Compares this invoice with the supplier&rsquo;s own past prices for the same item.</p>
+          </div>
+          {history.map((h) => <PriceHistory key={h.lineNo} h={h} description={itemName(h.sku)} />)}
+        </section>
+      )}
+
+      <section className="card">
+        <div className="card-head">
+          <FileText size={18} className="muted" aria-hidden />
+          <div>
+            <h3>Original document</h3>
+            <p className="card-sub">The file exactly as the supplier sent it ({c.format.toUpperCase()}).</p>
+          </div>
+          <div className="end" style={{ display: "flex", gap: 8 }}>
+            {previewable && (
+              <button className="btn btn-sm" onClick={() => setShowDoc((v) => !v)} aria-expanded={showDoc}>
+                {showDoc ? <EyeOff size={15} aria-hidden /> : <Eye size={15} aria-hidden />} {showDoc ? "Hide" : "Show"}
+              </button>
+            )}
+            <a className="btn btn-sm" href={documentUrl}>Download</a>
+          </div>
+        </div>
+        {showDoc && previewable && <iframe className="doc-frame" src={documentUrl} title={`Original document ${c.file}`} />}
+        {!previewable && (
+          <p className="card-pad small soft">
+            {c.format !== "pdf" ? "Spreadsheets can't be previewed here. Download to open it." : REASONS[c.extraction.intake]?.long}
+          </p>
+        )}
+      </section>
+
       {ws && (
-        <section className="block">
-          <div className="block-head"><h3>Decision</h3></div>
+        <section className="card card-pad stack" id="decide">
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 700 }}>Your decision</h3>
+            <p className="card-sub">Nothing happens to this invoice until someone decides.</p>
+          </div>
           <Decision ws={ws} invoiceId={c.id} action={c.action} events={events} onRecorded={onDecided} preset={preset} />
         </section>
       )}
-    </article>
+    </div>
   );
 }
