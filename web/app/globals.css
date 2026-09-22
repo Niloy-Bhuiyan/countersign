@@ -441,3 +441,53 @@ table.t tr.total td { font-weight: 600; }
   .list-foot { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+/* ---------- signature: stamp, pen, self-drawing ticks, reading and running ----------
+   Each element's resting style is its final state; keyframes only describe the way in
+   (fill: backwards), so reduced motion shows the finished page. */
+
+.stamp { display: block; opacity: 0.9; transform: rotate(-9deg); mix-blend-mode: multiply; pointer-events: none;
+  animation: stamp-in 460ms cubic-bezier(0.2, 0.9, 0.3, 1.25) 120ms backwards; }
+@keyframes stamp-in { from { opacity: 0; transform: scale(1.9) rotate(-22deg); } 70% { opacity: 1; } }
+.stamp-on-paper { position: absolute; left: 52%; top: 50%; margin: -52px 0 0 -52px; }
+.callout .stamp-on-ink { mix-blend-mode: normal; position: absolute; right: 22px; top: 50%; width: 72px; height: 72px; margin: -36px 0 0; }
+.detail-head { position: relative; overflow: hidden; }
+.callout.strong { position: relative; overflow: hidden; min-height: 84px; align-items: center; padding-right: 110px; }
+
+.pen { position: absolute; left: -6%; bottom: -0.34em; width: 112%; height: 0.42em; overflow: visible; pointer-events: none; }
+.pen path { fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round;
+  vector-effect: non-scaling-stroke; stroke-dasharray: 1; stroke-dashoffset: 0;
+  animation: pen-draw 1400ms cubic-bezier(0.6, 0.1, 0.3, 1) 700ms backwards; }
+@keyframes pen-draw { from { stroke-dashoffset: 1; } }
+.signed { position: relative; display: inline-block; }
+
+.brand-mark svg path, .hero h1 .mark svg path, .orb.seen svg path {
+  stroke-dasharray: 24; stroke-dashoffset: 0; animation: tick-draw 520ms ease-out 250ms backwards; }
+.orb svg path { stroke-dasharray: 24; }
+.orb:not(.seen) svg path { stroke-dashoffset: 24; }
+@keyframes tick-draw { from { stroke-dashoffset: 24; } }
+
+.thread { position: relative; overflow: hidden; }
+.thread::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 56px; pointer-events: none;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--info-dot) 14%, transparent), transparent);
+  animation: scan 900ms ease-in-out backwards; }
+@keyframes scan { from { top: -56px; } }
+.thread > * { animation: rise 420ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
+.thread > *:nth-child(2) { animation-delay: 150ms; }
+.thread > *:nth-child(3) { animation-delay: 380ms; }
+.thread > *:nth-child(4) { animation-delay: 560ms; }
+.thread > *:nth-child(5) { animation-delay: 740ms; }
+.thread > *:nth-child(n + 6) { animation-delay: 900ms; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+
+.checklist .check-row { animation: rise 380ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
+.checklist .check-row .dot { animation: dot-pop 360ms cubic-bezier(0.3, 1.6, 0.5, 1) backwards; }
+.checklist .check-row:nth-child(2), .checklist .check-row:nth-child(2) .dot { animation-delay: 140ms; }
+.checklist .check-row:nth-child(3), .checklist .check-row:nth-child(3) .dot { animation-delay: 280ms; }
+.checklist .check-row:nth-child(4), .checklist .check-row:nth-child(4) .dot { animation-delay: 420ms; }
+@keyframes dot-pop { from { transform: scale(0); background: var(--tile-3); } }
+
+@media (max-width: 760px) {
+  .stamp-on-paper { left: auto; right: 14px; top: 14px; margin: 0; width: 72px; height: 72px; }
+  .callout .stamp-on-ink { right: 14px; }
+}
