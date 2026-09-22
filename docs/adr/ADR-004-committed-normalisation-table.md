@@ -54,3 +54,16 @@ vendor, so it fails loudly instead.
 **Match on tax ID only.** Attractive — tax IDs are canonical. Rejected as the sole mechanism
 because the tax ID is itself extracted from the document and can be missing or misread; it is
 useful as corroboration, not as the key.
+
+## Addendum, after the first evaluation: two companies, one key
+
+The corpus contains *Teesta Industries Ltd* and *Teesta Industries Corporation*, and *Surma
+Industries Corporation* and *Surma Industries Limited*: four real-looking, different
+companies that differ only in legal form. Stripping legal form is the table's job, so each
+pair collapsed to one key, and 22 clean invoices were matched to the wrong vendor.
+
+The fix follows the corroboration this record already anticipated, without loosening the
+table. The name narrows the candidates; the tax ID printed on the document decides between
+them (`Reference.identify_vendor`). A tax ID that contradicts the name resolves in neither
+direction and goes to a person. Tests cover both twins, the ambiguous case with no tax ID,
+and the contradiction.
