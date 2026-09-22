@@ -264,3 +264,13 @@ def test_without_a_tax_id_the_twins_are_ambiguous(twins):
 
 def test_a_tax_id_that_contradicts_the_name_is_not_resolved(twins):
     assert twins.identify_vendor("Teesta Industries Ltd", "999") == (None, "vendor_tax_id_mismatch")
+
+
+def test_an_unread_document_on_the_same_order_holds_the_match():
+    """Found by the evaluation: a near-duplicate cleared because the invoice it
+    copied had failed extraction and was invisible to the ledger."""
+    ref = reference(order(), delivered={"PO-1": "10"})
+    results = three_way.run(invoice(), VENDOR, ref.orders["PO-1"], ref, Ledger(), ["INV-UNREAD"])
+    held = [r for r in results if r.rule == "order_has_unread_document"]
+    assert held and held[0].outcome == ABSTAINED
+    assert held[0].evidence["documents"] == ["INV-UNREAD"]

@@ -11,6 +11,13 @@ Rules, in the order they are applied:
 
 A purchase order with no delivery at all fails rule 5 outright: billing for goods
 that were never received is exactly the case this check exists for.
+
+If another document citing the same order could not be read, the match abstains.
+Rules 3 to 5 and duplicate detection all depend on knowing every invoice on the
+order; an unread one is a gap in that knowledge. The first evaluation run found a
+near-duplicate that cleared because the legitimate invoice it copied was sitting
+in review after a failed extraction, invisible to the ledger. Abstaining sends
+the invoice to a person, so the gap can only cost a review, never a payment.
 """
 
 from __future__ import annotations
@@ -18,6 +25,7 @@ from __future__ import annotations
 from decimal import Decimal
 
 from countersign.checks.base import (
+    ABSTAINED,
     FAILED,
     THREE_WAY_MATCH,
     CheckResult,
@@ -41,6 +49,7 @@ def run(
     order: PurchaseOrder | None,
     reference: Reference,
     ledger: Ledger,
+    unread_on_order: list[str] | None = None,
 ) -> list[CheckResult]:
     if order is None:
         return [
@@ -61,6 +70,18 @@ def run(
 
     results: list[CheckResult] = []
     evidence_po = {"purchase_orders": [order.id]}
+
+    if unread_on_order:
+        results.append(
+            CheckResult(
+                THREE_WAY_MATCH,
+                ABSTAINED,
+                f"{len(unread_on_order)} other document(s) citing order {order.po_number} could "
+                "not be read, so what has already been billed on it is not fully known.",
+                rule="order_has_unread_document",
+                evidence={"documents": list(unread_on_order), **evidence_po},
+            )
+        )
 
     if invoice.currency != order.currency:
         results.append(

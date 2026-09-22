@@ -70,6 +70,14 @@ def run_batch(
     cases.sort(key=_arrival_key)
     ledger = Ledger()
 
+    # Orders cited by a document that failed extraction. The reader's rejected
+    # output is untrusted, so it is used only to hold other invoices back.
+    unread: dict[str, list[str]] = {}
+    for case in cases:
+        raw = case.extraction.raw
+        if not case.extraction.ok and raw is not None and raw.purchase_order_ref:
+            unread.setdefault(raw.purchase_order_ref.strip(), []).append(case.document_id)
+
     for case in cases:
         if not case.extraction.ok:
             case.review_reason = case.extraction.review_reason
@@ -88,7 +96,14 @@ def run_batch(
         case.po_id = order.id if order else None
 
         case.results = [
-            *three_way.run(invoice, vendor, order, reference, ledger),
+            *three_way.run(
+                invoice,
+                vendor,
+                order,
+                reference,
+                ledger,
+                unread.get(order.id, []) if order else [],
+            ),
             *price_variance.run(invoice, vendor, order, reference),
             *duplicate.run(
                 invoice,
