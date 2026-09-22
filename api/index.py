@@ -20,9 +20,12 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Annotated
 
-ROOT = Path(__file__).resolve().parent.parent
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+# In the repository the packages sit at the root. In the deployment they are
+# bundled under api/_pkg, because the static console already owns /data/.
+HERE = Path(__file__).resolve().parent
+for candidate in (HERE / "_pkg", HERE.parent):
+    if candidate.is_dir() and str(candidate) not in sys.path:
+        sys.path.insert(0, str(candidate))
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile  # noqa: E402
 from fastapi.responses import JSONResponse, Response  # noqa: E402
