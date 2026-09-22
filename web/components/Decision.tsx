@@ -3,14 +3,13 @@
 import { AlertOctagon, CheckCircle2, PauseCircle, PenLine, Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api, type DecisionEvent, readReviewer, saveReviewer } from "./api";
-import { NEXT_STEP } from "./explain";
 import { date } from "./format";
 
 type Choice = "approved" | "held" | "escalated";
 
 const CHOICES: { kind: Choice; title: string; help: string; icon: React.ElementType }[] = [
-  { kind: "approved", title: "Approve payment", help: "The invoice is correct. Pay it.", icon: CheckCircle2 },
-  { kind: "held", title: "Put on hold", help: "Wait for the supplier to fix or explain something.", icon: PauseCircle },
+  { kind: "approved", title: "Approve", help: "The invoice is correct. Pay it.", icon: CheckCircle2 },
+  { kind: "held", title: "Hold", help: "Wait for the supplier to fix or explain something.", icon: PauseCircle },
   { kind: "escalated", title: "Escalate", help: "Send to the finance controller to decide.", icon: AlertOctagon },
 ];
 
@@ -97,7 +96,7 @@ export default function Decision({
 
   const history = events.length > 0 && (
     <details className="tech">
-      <summary>History of this invoice ({events.length})</summary>
+      <summary>History ({events.length})</summary>
       <div className="body history">
         {events.map((e) => (
           <div key={e.seq}>
@@ -118,13 +117,13 @@ export default function Decision({
     const Icon = d.icon;
     return (
       <div className="stack">
-        <div className={`callout callout-${d.tone}`}>
+        <div className="callout" style={{ background: "var(--bg)" }}>
           <Icon size={22} color={`var(--${d.tone})`} aria-hidden />
           <div>
             <h4>{d.word}</h4>
             <p>
-              Signed by <b>{decided.reviewer}</b> on {when(decided.at)}.
-              {decided.note && <> Reason: &ldquo;{decided.note}&rdquo;</>}
+              {decided.reviewer} · {when(decided.at)}
+              {decided.note && <> · &ldquo;{decided.note}&rdquo;</>}
             </p>
           </div>
           <button className="btn btn-sm" style={{ marginLeft: "auto" }} onClick={() => setUndoing(true)}>
@@ -139,22 +138,19 @@ export default function Decision({
   return (
     <div className="stack">
       {undoing ? (
-        <div className="callout callout-info">
-          <Undo2 size={20} color="var(--primary)" aria-hidden />
+        <div className="callout" style={{ background: "var(--bg)" }}>
+          <Undo2 size={20} aria-hidden />
           <div>
             <h4>Undo this decision?</h4>
-            <p>The invoice goes back to where it was. The undo is kept in the history, so nothing disappears.</p>
+            <p>The undo is kept in the history too.</p>
           </div>
         </div>
       ) : (
         <div className="decide-grid" role="group" aria-label="Your decision">
           {CHOICES.map(({ kind, title, help, icon: Icon }) => (
-            <button key={kind} className="choice" data-kind={kind} aria-pressed={choice === kind} onClick={() => setChoice(kind)}>
-              <span className="t">
-                <Icon size={18} aria-hidden /> {title}
-              </span>
-              <span className="d">{help}</span>
-              {hint === kind && <span className="pill pill-info" style={{ width: "fit-content" }}>Suggested</span>}
+            <button key={kind} className="choice" data-kind={kind} aria-pressed={choice === kind} onClick={() => setChoice(kind)} title={help}>
+              <span className="t"><Icon size={17} aria-hidden /> {title}</span>
+              {hint === kind && <span className="sugg">Suggested</span>}
             </button>
           ))}
         </div>
@@ -167,19 +163,12 @@ export default function Decision({
               <label htmlFor="reviewer">Your name</label>
               <input id="reviewer" className="input" value={reviewer} autoComplete="name" placeholder="e.g. Nusrat Rahman"
                 onChange={(e) => setReviewer(e.target.value)} />
-              <span className="hint">Every decision is signed.</span>
             </div>
             <div className="field">
               <label htmlFor="note">{needsReason ? "Reason (required)" : "Note (optional)"}</label>
               <textarea id="note" className="textarea" value={note} onChange={(e) => setNote(e.target.value)}
-                placeholder={needsReason ? "Why are you choosing differently from the suggestion?" : "Anything worth remembering"} />
-              <span className="hint">
-                {undoing
-                  ? "Say why you're undoing it (at least 10 characters)."
-                  : needsReason
-                    ? `The suggestion was “${NEXT_STEP[action]?.what}”. Choosing differently needs a reason of at least 10 characters.`
-                    : "Saved with your decision."}
-              </span>
+                placeholder={needsReason ? "Why choose differently from the suggestion?" : "Optional"} />
+              {needsReason && <span className="hint">At least 10 characters.</span>}
             </div>
           </div>
           {error && <p className="error-box" role="alert">Not saved: {error}</p>}
@@ -193,9 +182,6 @@ export default function Decision({
           </div>
         </>
       )}
-      <p className="hint">
-        Saved on the server in your workspace&rsquo;s decision history. This demo never pays anything.
-      </p>
       {history}
     </div>
   );
