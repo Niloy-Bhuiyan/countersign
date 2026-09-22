@@ -1,33 +1,40 @@
 "use client";
 
+import { AlertOctagon, CheckCircle2, PauseCircle, PenLine, Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api, type DecisionEvent, readReviewer, saveReviewer } from "./api";
+import { NEXT_STEP } from "./explain";
 import { date } from "./format";
-import { ACTIONS, DECISION_LABEL } from "./labels";
 
 type Choice = "approved" | "held" | "escalated";
 
-const CHOICES: { kind: Choice; title: string; help: string }[] = [
-  { kind: "approved", title: "Approve", help: "Countersign for payment" },
-  { kind: "held", title: "Hold", help: "Wait on the vendor" },
-  { kind: "escalated", title: "Escalate", help: "Send to the controller" },
+const CHOICES: { kind: Choice; title: string; help: string; icon: React.ElementType }[] = [
+  { kind: "approved", title: "Approve payment", help: "The invoice is correct. Pay it.", icon: CheckCircle2 },
+  { kind: "held", title: "Put on hold", help: "Wait for the supplier to fix or explain something.", icon: PauseCircle },
+  { kind: "escalated", title: "Escalate", help: "Send to the finance controller to decide.", icon: AlertOctagon },
 ];
 
-function disagrees(action: string, choice: Choice): boolean {
-  if (action === "CLEAR_FOR_PAYMENT") return choice !== "approved";
-  if (action === "ESCALATE_TO_CONTROLLER") return choice !== "escalated";
-  if (action.startsWith("HOLD_")) return choice !== "held";
-  return false;
+const DONE: Record<Choice, { word: string; tone: string; icon: React.ElementType }> = {
+  approved: { word: "Approved for payment", tone: "ok", icon: CheckCircle2 },
+  held: { word: "Put on hold", tone: "warn", icon: PauseCircle },
+  escalated: { word: "Escalated to the controller", tone: "bad", icon: AlertOctagon },
+};
+
+function suggested(action: string): Choice | null {
+  if (action === "CLEAR_FOR_PAYMENT") return "approved";
+  if (action === "ESCALATE_TO_CONTROLLER") return "escalated";
+  if (action.startsWith("HOLD_")) return "held";
+  return null;
 }
 
-function time(iso: string): string {
-  return `${date(iso.slice(0, 10))}, ${iso.slice(11, 16)} UTC`;
+function when(iso: string): string {
+  return `${date(iso.slice(0, 10))} at ${iso.slice(11, 16)} UTC`;
 }
 
 /**
- * Records a decision through the API. The server applies the state machine and the
- * rules again; this form only explains them in advance, so a refusal is rare and,
- * when it happens, the server's reason is shown as it was given.
+ * Records a decision on the server. The server checks the same rules again (a name, a
+ * reason when you disagree with the suggestion, no deciding twice), so this form only
+ * explains them up front and shows the server's reason if it refuses.
  */
 export default function Decision({
   ws,
@@ -49,22 +56,23 @@ export default function Decision({
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [withdrawing, setWithdrawing] = useState(false);
+  const [undoing, setUndoing] = useState(false);
 
   useEffect(() => setReviewer(readReviewer()), []);
   useEffect(() => {
     setChoice(null);
     setNote("");
     setError(null);
-    setWithdrawing(false);
+    setUndoing(false);
   }, [invoiceId]);
   useEffect(() => {
     if (preset) setChoice(preset);
   }, [preset]);
 
-  const current = events.length ? events[events.length - 1] : null;
-  const decided = current && current.decision !== "withdrawn" ? current : null;
-  const needsNote = withdrawing || (choice ? disagrees(action, choice) : false);
+  const hint = suggested(action);
+  const latest = events.length ? events[events.length - 1] : null;
+  const decided = latest && latest.decision !== "withdrawn" ? latest : null;
+  const needsReason = undoing || (choice !== null && hint !== null && choice !== hint);
 
   async function submit(decision: Choice | "withdrawn") {
     setBusy(true);
@@ -78,7 +86,7 @@ export default function Decision({
       });
       setChoice(null);
       setNote("");
-      setWithdrawing(false);
+      setUndoing(false);
       onRecorded();
     } catch (e) {
       setError((e as Error).message);
@@ -88,96 +96,105 @@ export default function Decision({
   }
 
   const history = events.length > 0 && (
-    <div className="events" aria-label="Decision history">
-      {events.map((e) => (
-        <span key={e.seq}>
-          {time(e.at)} · {e.decision === "withdrawn" ? "Withdrawn" : DECISION_LABEL[e.decision]?.phrase} by {e.reviewer}
-          {e.overrules_recommendation && " · overruled the recommendation"}
-          {e.note && ` · “${e.note}”`}
-        </span>
-      ))}
-    </div>
+    <details className="tech">
+      <summary>History of this invoice ({events.length})</summary>
+      <div className="body history">
+        {events.map((e) => (
+          <div key={e.seq}>
+            <span>
+              {when(e.at)}: <b>{e.decision === "withdrawn" ? "Decision undone" : DONE[e.decision as Choice]?.word}</b> by{" "}
+              {e.reviewer}
+              {e.overrules_recommendation && " (different from the suggestion)"}
+              {e.note && `. “${e.note}”`}
+            </span>
+          </div>
+        ))}
+      </div>
+    </details>
   );
 
-  if (decided && !withdrawing) {
-    const label = DECISION_LABEL[decided.decision];
+  if (decided && !undoing) {
+    const d = DONE[decided.decision as Choice];
+    const Icon = d.icon;
     return (
-      <div>
-        <div className="signature" data-kind={decided.decision}>
-          <span className="stamp">{label.stamp}</span>
-          <span className="who">{decided.reviewer}</span>
-          <span className="when">
-            {label.phrase} · {time(decided.at)}
-          </span>
-          {decided.note && <span className="why">{decided.note}</span>}
+      <div className="stack">
+        <div className={`callout callout-${d.tone}`}>
+          <Icon size={22} color={`var(--${d.tone})`} aria-hidden />
+          <div>
+            <h4>{d.word}</h4>
+            <p>
+              Signed by <b>{decided.reviewer}</b> on {when(decided.at)}.
+              {decided.note && <> Reason: &ldquo;{decided.note}&rdquo;</>}
+            </p>
+          </div>
+          <button className="btn btn-sm" style={{ marginLeft: "auto" }} onClick={() => setUndoing(true)}>
+            <Undo2 size={15} aria-hidden /> Undo
+          </button>
         </div>
         {history}
-        <p style={{ marginTop: 12 }}>
-          <button className="link-button" onClick={() => setWithdrawing(true)}>
-            Withdraw this decision
-          </button>
-        </p>
       </div>
     );
   }
 
   return (
-    <div className="decide">
-      {withdrawing ? (
-        <p>Withdrawing returns the invoice to where the system left it. The withdrawal is kept in the history.</p>
+    <div className="stack">
+      {undoing ? (
+        <div className="callout callout-info">
+          <Undo2 size={20} color="var(--primary)" aria-hidden />
+          <div>
+            <h4>Undo this decision?</h4>
+            <p>The invoice goes back to where it was. The undo is kept in the history, so nothing disappears.</p>
+          </div>
+        </div>
       ) : (
-        <div className="choices" role="group" aria-label="Decision">
-          {CHOICES.map((c) => (
-            <button
-              key={c.kind}
-              className="choice"
-              data-kind={c.kind}
-              aria-pressed={choice === c.kind}
-              onClick={() => setChoice(c.kind)}
-            >
-              <b>{c.title}</b>
-              <span>{c.help}</span>
+        <div className="decide-grid" role="group" aria-label="Your decision">
+          {CHOICES.map(({ kind, title, help, icon: Icon }) => (
+            <button key={kind} className="choice" data-kind={kind} aria-pressed={choice === kind} onClick={() => setChoice(kind)}>
+              <span className="t">
+                <Icon size={18} aria-hidden /> {title}
+              </span>
+              <span className="d">{help}</span>
+              {hint === kind && <span className="pill pill-info" style={{ width: "fit-content" }}>Suggested</span>}
             </button>
           ))}
         </div>
       )}
 
-      {(choice || withdrawing) && (
+      {(choice || undoing) && (
         <>
-          <div className="decide-row">
+          <div className="decide-fields">
             <div className="field">
-              <label className="label" htmlFor="reviewer">Signed by</label>
-              <input id="reviewer" className="input" value={reviewer} autoComplete="name"
-                onChange={(e) => setReviewer(e.target.value)} placeholder="Your name" />
+              <label htmlFor="reviewer">Your name</label>
+              <input id="reviewer" className="input" value={reviewer} autoComplete="name" placeholder="e.g. Nusrat Rahman"
+                onChange={(e) => setReviewer(e.target.value)} />
+              <span className="hint">Every decision is signed.</span>
             </div>
             <div className="field">
-              <label className="label" htmlFor="note">
-                {needsNote ? "Reason (required)" : "Note (optional)"}
-              </label>
+              <label htmlFor="note">{needsReason ? "Reason (required)" : "Note (optional)"}</label>
               <textarea id="note" className="textarea" value={note} onChange={(e) => setNote(e.target.value)}
-                aria-describedby="note-help" />
-              <span id="note-help" className="help">
-                {withdrawing
-                  ? "Say why it is being withdrawn. At least 10 characters."
-                  : needsNote
-                    ? `This overrules “${ACTIONS[action]?.verdict ?? action}”. At least 10 characters.`
-                    : "Kept with the decision in the audit trail."}
+                placeholder={needsReason ? "Why are you choosing differently from the suggestion?" : "Anything worth remembering"} />
+              <span className="hint">
+                {undoing
+                  ? "Say why you're undoing it (at least 10 characters)."
+                  : needsReason
+                    ? `The suggestion was “${NEXT_STEP[action]?.what}”. Choosing differently needs a reason of at least 10 characters.`
+                    : "Saved with your decision."}
               </span>
             </div>
           </div>
-          {error && <p className="flash" role="alert">{error}</p>}
-          <div style={{ display: "flex", gap: 10 }}>
-            <button className="btn btn-ink" disabled={busy || reviewer.trim().length < 2}
-              onClick={() => submit(withdrawing ? "withdrawn" : choice!)}>
-              {busy ? "Recording…" : withdrawing ? "Withdraw decision" : "Sign and record"}
+          {error && <p className="error-box" role="alert">Not saved: {error}</p>}
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button className="btn btn-primary" disabled={busy || reviewer.trim().length < 2}
+              onClick={() => submit(undoing ? "withdrawn" : choice!)}>
+              {busy ? <span className="spinner" aria-hidden /> : <PenLine size={16} aria-hidden />}
+              {busy ? "Saving…" : undoing ? "Undo decision" : "Sign and save"}
             </button>
-            <button className="btn" onClick={() => (setChoice(null), setWithdrawing(false))}>Cancel</button>
+            <button className="btn btn-ghost" onClick={() => (setChoice(null), setUndoing(false))}>Cancel</button>
           </div>
         </>
       )}
-      <p className="notice">
-        Recorded on the server, checked by the same state machine as the pipeline, and kept in this
-        workspace&rsquo;s audit trail. Nothing is paid: this system has no code path that pays.
+      <p className="hint">
+        Saved on the server in your workspace&rsquo;s decision history. This demo never pays anything.
       </p>
       {history}
     </div>
