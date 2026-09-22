@@ -4,6 +4,16 @@ Notable changes. Dates are the date the work landed on `main`.
 
 ## Unreleased
 
+### Added — live system
+- FastAPI function on Vercel running the evaluated pipeline on uploads and lab invoices.
+- Invoice lab: raises an order at the vendor's usual prices, records the delivery, renders
+  the supplier's PDF and reads it back; each tamper is caught by the check it targets.
+- Server-side decisions through the state machine, append-only in a private Blob store,
+  with per-reviewer workspaces and a CSV audit trail (ADR-007).
+- Console redesigned as an audit working paper: ledger beside the open case, price-history
+  evidence charts, lines against order and deliveries, and a countersignature on decision.
+
+
 ### Added
 - Exact decimal money path with floats refused at the module and database boundaries.
 - Invoice state machine with guards: `cleared` requires every check to have passed, and no
