@@ -4,6 +4,18 @@ Notable changes. Dates are the date the work landed on `main`.
 
 ## Unreleased
 
+### Fixed — 2026-09-22
+- Resubmitting a lab invoice returned 500 on the live store, which refuses overwrites; it no
+  longer rewrites the stored original. The in-memory store now refuses overwrites too, so
+  tests catch this class of bug.
+- A Windows-1252 CSV, a damaged spreadsheet, or a PDF that crashed the parser returned 500;
+  each is now read or quarantined.
+
+### Security — 2026-09-22
+- Content Security Policy, framing, permissions and sandbox headers; CSV formula neutralising;
+  limits on note length, upload reads and documents per workspace; storage failures reported
+  as 409 or 503 with a readable message.
+
 ### Added — live system
 - FastAPI function on Vercel running the evaluated pipeline on uploads and lab invoices.
 - Invoice lab: raises an order at the vendor's usual prices, records the delivery, renders

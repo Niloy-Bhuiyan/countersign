@@ -86,6 +86,8 @@ position the model associates with a different field.
 | Per-field confidence below threshold routes to human review. | Not built: the offline reader has no confidence score; a model provider would add one |
 | The three-way match compares against the purchase order, so a wrong quantity or price has to match records the supplier never saw. | Built, tested, measured |
 
+| Hostile files never crash a request: a damaged PDF or spreadsheet, a CSV in a legacy encoding, or a spreadsheet that would unzip past 64 MB is quarantined for a person. `defusedxml` guards spreadsheet XML. | Built, tested |
+
 **Residual risk.** A misread that is internally consistent *and* agrees with the purchase
 order is not detectable by this system. It is also, by construction, not a financial loss.
 
@@ -166,8 +168,14 @@ deliberate later decision, recorded in [ADR-006](adr/ADR-006-single-state-guard.
 fill a workspace with junk, or script requests.
 
 **Mitigations.** Workspaces are isolated, so junk in one never reaches another. Uploads are
-limited to 4 MB and to PDF, XLSX and CSV. The store is private; blob URLs return 403
-without the token, which never leaves the server. Decision rules are enforced server-side.
+limited to 4 MB (read no further than that) and to PDF, XLSX and CSV; a workspace holds at
+most 200 documents; a decision note at most 1,000 characters. The store is private; blob
+URLs return 403 without the token, which never leaves the server, and stored objects are
+write-once, so nothing recorded can be replaced. Decision rules are enforced server-side.
+Files served back carry `Content-Security-Policy: sandbox` and `nosniff`, so an uploaded
+file cannot run script on this origin. The console sends a Content Security Policy,
+`X-Frame-Options`, a Permissions-Policy and HSTS. The CSV export prefixes cells that a
+spreadsheet would run as formulas.
 
 **Residual risk.** No rate limiting and no authentication. Acceptable for a demonstration
 on synthetic data; not for anything holding real invoices.
