@@ -124,26 +124,26 @@ def _d(value) -> Decimal:
     return Decimal(str(value)) if not isinstance(value, str) else Decimal(value)
 
 
-def load(directory: Path) -> Reference:
-    vendors_raw = json.loads((directory / "vendors.json").read_text(encoding="utf-8"))
-    orders_raw = json.loads((directory / "purchase_orders.json").read_text(encoding="utf-8"))
-    deliveries_raw = json.loads((directory / "deliveries.json").read_text(encoding="utf-8"))
+def vendor_from_row(row: dict) -> Vendor:
+    return Vendor(
+        id=row["id"],
+        legal_name=row["legal_name"],
+        normalised_name=row["normalised_name"],
+        tax_id=row["tax_id"],
+        payment_terms_days=row["payment_terms_days"],
+        currency=row["currency"],
+    )
 
-    vendors = {
-        row["id"]: Vendor(
-            id=row["id"],
-            legal_name=row["legal_name"],
-            normalised_name=row["normalised_name"],
-            tax_id=row["tax_id"],
-            payment_terms_days=row["payment_terms_days"],
-            currency=row["currency"],
-        )
-        for row in vendors_raw
-    }
 
-    orders = {}
-    for row in orders_raw:
-        lines = tuple(
+def order_from_row(row: dict) -> PurchaseOrder:
+    return PurchaseOrder(
+        id=row["id"],
+        po_number=row["po_number"],
+        vendor_id=row["vendor_id"],
+        ordered_at=date.fromisoformat(row["ordered_at"]),
+        currency=row["currency"],
+        total=_d(row["total"]),
+        lines=tuple(
             POLine(
                 po_id=row["id"],
                 line_no=line["line_no"],
@@ -155,29 +155,49 @@ def load(directory: Path) -> Reference:
                 tax_rate=_d(line["tax_rate"]),
             )
             for line in row["lines"]
-        )
-        orders[row["id"]] = PurchaseOrder(
-            id=row["id"],
-            po_number=row["po_number"],
-            vendor_id=row["vendor_id"],
-            ordered_at=date.fromisoformat(row["ordered_at"]),
-            currency=row["currency"],
-            total=_d(row["total"]),
-            lines=lines,
-        )
+        ),
+    )
 
+
+def delivery_from_row(row: dict) -> Delivery:
+    return Delivery(
+        id=row["id"],
+        delivery_note_number=row["delivery_note_number"],
+        po_id=row["po_id"],
+        delivered_at=date.fromisoformat(row["delivered_at"]),
+        lines=tuple(
+            DeliveryLine(line["po_line_no"], _d(line["quantity_received"])) for line in row["lines"]
+        ),
+    )
+
+
+def build(vendors: list[dict], orders: list[dict], deliveries: list[dict]) -> Reference:
     deliveries_by_po: dict[str, list[Delivery]] = {}
-    for row in deliveries_raw:
-        delivery = Delivery(
-            id=row["id"],
-            delivery_note_number=row["delivery_note_number"],
-            po_id=row["po_id"],
-            delivered_at=date.fromisoformat(row["delivered_at"]),
-            lines=tuple(
-                DeliveryLine(line["po_line_no"], _d(line["quantity_received"]))
-                for line in row["lines"]
-            ),
-        )
+    for row in deliveries:
+        delivery = delivery_from_row(row)
         deliveries_by_po.setdefault(delivery.po_id, []).append(delivery)
+    return Reference(
+        vendors={row["id"]: vendor_from_row(row) for row in vendors},
+        orders={row["id"]: order_from_row(row) for row in orders},
+        deliveries_by_po=deliveries_by_po,
+    )
 
-    return Reference(vendors=vendors, orders=orders, deliveries_by_po=deliveries_by_po)
+
+def load(directory: Path) -> Reference:
+    def read(name: str) -> list[dict]:
+        return json.loads((directory / name).read_text(encoding="utf-8"))
+
+    return build(read("vendors.json"), read("purchase_orders.json"), read("deliveries.json"))
+
+
+def with_overlay(base: Reference, orders: list[dict], deliveries: list[dict]) -> Reference:
+    """The buyer's records plus orders and deliveries raised in one workspace."""
+    merged: dict[str, list[Delivery]] = {k: list(v) for k, v in base.deliveries_by_po.items()}
+    for row in deliveries:
+        delivery = delivery_from_row(row)
+        merged.setdefault(delivery.po_id, []).append(delivery)
+    return Reference(
+        vendors=base.vendors,
+        orders={**base.orders, **{row["id"]: order_from_row(row) for row in orders}},
+        deliveries_by_po=merged,
+    )
