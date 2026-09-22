@@ -45,11 +45,18 @@ No real vendor, company, transaction or document appears anywhere in it.
 ## Structure
 
 Each vendor supplies a small fixed set of SKUs from one category and is ordered from
-repeatedly, so every vendor-item pair accumulates price history. 76 of 90 pairs reach the
-five-observation minimum the variance check requires; the remaining 14 exercise its
-abstention path. Both facts are asserted by a test, because a corpus where every pair cleared
-the minimum would never test abstention and one where none did would make the check
-meaningless.
+repeatedly, so every vendor-item pair accumulates price history.
+
+**Correction.** An earlier version of this card said 76 of 90 pairs reach the
+five-observation minimum. That counted every order in the period, but the check only sees
+orders placed *before* the invoice's own, so most invoices had too little history and the
+check abstained on them. The corpus now includes a year of closed historical orders (12 per
+vendor, reference data only, no invoices), generated from a separate random stream so that
+every invoice, defect and ground-truth row stayed byte-identical.
+
+A test still asserts that most pairs clear the minimum and some do not, because a corpus
+where every pair cleared it would never test abstention and one where none did would make
+the check meaningless.
 
 Prices drift slowly over the period and carry ±1.5% jitter, so a genuine market move does not
 look like a defect.
