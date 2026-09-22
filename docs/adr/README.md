@@ -13,3 +13,4 @@ A decision that had only one plausible option does not get a record here.
 | [004](ADR-004-committed-normalisation-table.md) | A committed normalisation table, not fuzzy matching | Accepted |
 | [005](ADR-005-synthetic-corpus.md) | A generated corpus with recorded ground truth | Accepted |
 | [006](ADR-006-single-state-guard.md) | One guarded transition function, not scattered checks | Accepted |
+| [007](ADR-007-workspaces-and-append-only-decisions.md) | Isolated workspaces over append-only decision storage | Accepted |
