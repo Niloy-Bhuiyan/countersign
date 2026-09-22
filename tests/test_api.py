@@ -189,3 +189,109 @@ def test_the_audit_trail_exports_as_csv(client):
     assert response.status_code == 200
     assert response.text.splitlines()[0].startswith("at,invoice_id,decision")
     assert "INV-0240" in response.text
+
+
+# ---- regressions: each of these returned 500 or was accepted before ------------------
+
+
+def test_sending_the_same_invoice_twice_again_is_still_a_duplicate(client):
+    lab(client, "clean", ws="resubmittwice")
+    lab(client, "resubmit", ws="resubmittwice")
+    third = lab(client, "resubmit", ws="resubmittwice")
+    assert "DUPLICATE_INVOICE/same_bytes" in failed(third)
+
+
+def test_resubmitting_with_nothing_to_resubmit_explains_itself(client):
+    response = client.post(
+        "/api/workspaces/nothingyet/lab", json={"vendorId": "VEN-004", "tamper": "resubmit"}
+    )
+    assert response.status_code == 400
+    assert "create a test invoice first" in response.json()["detail"]
+
+
+def test_the_memory_store_refuses_to_overwrite_like_the_real_one():
+    from countersign.blobstore import BlobExists, MemoryBlob
+
+    store = MemoryBlob()
+    store.put("a", b"1", "text/plain")
+    with pytest.raises(BlobExists):
+        store.put("a", b"2", "text/plain")
+    assert store.get("a") == b"1"
+
+
+def upload(client, name, data, ws="uploadcheck"):
+    return client.post(f"/api/workspaces/{ws}/documents", files={"file": (name, data)})
+
+
+def test_a_windows_1252_csv_is_read_not_crashed(client):
+    response = upload(client, "export.csv", "Invoice,Béla Trading\n".encode("cp1252"))
+    assert response.status_code == 200, response.text
+
+
+@pytest.mark.parametrize("data", [b"not a zip at all", b"PK\x03\x04broken"])
+def test_a_damaged_spreadsheet_is_quarantined_not_crashed(client, data):
+    response = upload(client, "broken.xlsx", data, ws="brokenxlsx")
+    assert response.status_code == 200, response.text
+    assert response.json()["extraction"]["intake"] == "quarantined_unreadable"
+
+
+def test_a_spreadsheet_that_unzips_to_gigabytes_is_not_opened(client, monkeypatch):
+    import io
+    import zipfile
+
+    from countersign import intake
+
+    monkeypatch.setattr(intake, "MAX_UNZIPPED", 1000)
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("xl/worksheets/sheet1.xml", "0" * 5000)
+    response = upload(client, "bomb.xlsx", buffer.getvalue(), ws="zipbombs")
+    assert response.json()["extraction"]["intake"] == "quarantined_unreadable"
+
+
+def test_a_decision_note_has_a_size_limit(client):
+    response = client.post(
+        f"/api/workspaces/{WS}/decisions",
+        json={
+            "invoiceId": "INV-0240",
+            "decision": "held",
+            "reviewer": "Test Person",
+            "note": "x" * 5000,
+        },
+    )
+    assert response.status_code == 422
+    assert "1000" in response.json()["detail"]
+
+
+def test_the_csv_export_neutralises_formulas(client):
+    client.post(
+        "/api/workspaces/csvinjection/decisions",
+        json={
+            "invoiceId": "INV-0240",
+            "decision": "held",
+            "reviewer": '=HYPERLINK("http://x")',
+            "note": "@SUM(A1:A9) looks wrong",
+        },
+    )
+    body = client.get("/api/workspaces/csvinjection/decisions.csv").text
+    assert "'=HYPERLINK" in body and "'@SUM" in body
+
+
+def test_served_files_are_sandboxed(client):
+    detail = lab(client, "clean", ws="sandboxed")
+    response = client.get(f"/api/workspaces/sandboxed/files/{detail['file']}")
+    assert response.status_code == 200
+    assert response.headers["content-security-policy"] == "sandbox"
+    assert response.headers["x-content-type-options"] == "nosniff"
+
+
+def test_a_full_workspace_refuses_more_documents(client, monkeypatch):
+    from countersign import workspace
+
+    monkeypatch.setattr(workspace, "MAX_DOCUMENTS", 1)
+    lab(client, "clean", ws="fullspace")
+    response = client.post(
+        "/api/workspaces/fullspace/lab", json={"vendorId": "VEN-004", "tamper": "clean"}
+    )
+    assert response.status_code == 400
+    assert "full" in response.json()["detail"]
