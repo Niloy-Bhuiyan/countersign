@@ -42,6 +42,12 @@ class Settings(BaseSettings):
     price_history_window_days: int = 365
     price_history_min_points: int = 5
     price_variance_mad_threshold: Decimal = Decimal("3.5")
+    # Materiality. A vendor whose past prices sit within a fraction of a percent of
+    # each other has a tiny MAD, and a robust z-score over it flags a 2.6% move as
+    # thirteen deviations out. Statistically unusual is not the same as money at
+    # risk, so a line fails only when it is both. Set to 0 to see the difference:
+    # the evaluation runs both configurations and keeps both results.
+    price_variance_min_pct: Decimal = Decimal("10.0")
 
     # Duplicate detection.
     near_duplicate_window_days: int = 45
