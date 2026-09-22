@@ -30,6 +30,7 @@ openpyxl>=3.1
 reportlab>=4.2
 httpx>=0.27
 python-multipart>=0.0.9
+defusedxml>=0.7
 """
 
 VERCEL = {
@@ -46,8 +47,39 @@ VERCEL = {
             "headers": [
                 {"key": "X-Content-Type-Options", "value": "nosniff"},
                 {"key": "Referrer-Policy", "value": "strict-origin-when-cross-origin"},
+                {"key": "X-Frame-Options", "value": "SAMEORIGIN"},
+                {"key": "Cross-Origin-Opener-Policy", "value": "same-origin"},
+                {
+                    "key": "Permissions-Policy",
+                    "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+                },
             ],
-        }
+        },
+        {
+            # The console. The API is excluded because its docs page loads Swagger UI
+            # from a CDN; API responses are JSON, and served files carry their own CSP.
+            "source": "/((?!api/).*)",
+            "headers": [
+                {
+                    "key": "Content-Security-Policy",
+                    "value": "; ".join(
+                        [
+                            "default-src 'self'",
+                            "script-src 'self' 'unsafe-inline'",
+                            "style-src 'self' 'unsafe-inline'",
+                            "img-src 'self' data: blob:",
+                            "font-src 'self' data:",
+                            "connect-src 'self'",
+                            "frame-src 'self'",
+                            "frame-ancestors 'self'",
+                            "object-src 'none'",
+                            "base-uri 'self'",
+                            "form-action 'self'",
+                        ]
+                    ),
+                }
+            ],
+        },
     ],
 }
 
