@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In development. Component status is marked per section. |
+| **Status** | Built and deployed except the API. Component status is marked per module. |
 | **Last reviewed** | 2026-09-20 |
 | **Decisions** | [adr/](adr/) |
 
@@ -70,12 +70,12 @@ This is the central design decision. See [ADR-001](adr/ADR-001-llm-boundary.md).
 
 | Concern | Mechanism | Rationale |
 |---|---|---|
-| Document → typed fields | LLM, schema-constrained, validated, one bounded retry | Genuinely unstructured input in per-vendor formats |
-| Three-way match | pandas, exact comparison with a stated tolerance | A controller must recompute it by hand and agree |
+| Document → typed fields | Offline reader in this release; a model can sit behind the same raw-string contract | Genuinely unstructured input in per-vendor formats |
+| Three-way match | Exact `Decimal` comparison with a stated tolerance | A controller must recompute it by hand and agree |
 | Price variance | Median + median absolute deviation | Auditable, and robust to the outliers it exists to find ([ADR-003](adr/ADR-003-mad-over-standard-deviation.md)) |
 | Duplicate detection | Deterministic keys over a committed normalisation table | Must never be a similarity score ([ADR-004](adr/ADR-004-committed-normalisation-table.md)) |
 | Tax arithmetic | `Decimal`, ROUND_HALF_UP, two places | Money is not a float ([ADR-002](adr/ADR-002-decimal-money.md)) |
-| Recommended action | LangGraph agent over check results | Reasoning about findings, not producing them |
+| Recommended action | Bounded agent graph in plain Python, six read-only tools, citation verification | Reasoning about findings, not producing them |
 | Payment | Human | Non-negotiable |
 
 The agent cannot change a check result. It reads them and argues about them.
@@ -93,11 +93,13 @@ countersign/                  application core
     models.py                 vendors, purchase orders, deliveries         [built]
     invoice.py                documents, extractions, invoices             [built]
     audit.py                  check results, recommendations, approvals    [built]
-  ingest/                     intake, hashing, quarantine                  [next]
-  extraction/                 providers, prompts, validators               [next]
-  checks/                     the four deterministic checks                [planned]
-  agent/                      tool catalogue and graph                     [planned]
-  api/                        FastAPI routes                               [planned]
+  intake.py                   read or quarantine, content hash             [built]
+  extraction/                 reader, schema, parsers, validators          [built]
+  reference.py                buyer's records, vendor identity             [built]
+  checks/                     the four deterministic checks                [built]
+  batch.py                    arrival-ordered run through the checks       [built]
+  agent/                      read-only tools and bounded graph            [built]
+  api/                        FastAPI routes                               [not built]
 
 data/                         synthetic corpus generation
   catalogue.py                vendors and item catalogue                   [built]
@@ -108,8 +110,9 @@ data/                         synthetic corpus generation
   render/                     four PDF layouts, spreadsheets, mess         [built]
   generate.py                 one seed to the whole corpus                 [built]
 
-eval/                         the evaluation harness                       [planned]
-web/                          Next.js review queue and dashboard           [planned]
+eval/                         the evaluation harness                       [built]
+web/                          static Next.js console on Vercel             [built]
+scripts/export_web.py         pipeline output to console data and BI export [built]
 migrations/                   alembic                                      [built]
 ```
 
@@ -178,24 +181,28 @@ sequenceDiagram
     end
 ```
 
-The provider is a protocol with three implementations: Gemini, Groq, and a deterministic
-offline mock that replays committed fixtures. The mock is the default, so the test suite and
-a full demo run need no API keys and no network. CI needing a secret would mean the offline
-default had broken.
+**As built:** the provider is the offline reader, a vocabulary-driven parser of the text
+layer and the spreadsheet cells. It returns the same raw-string contract a model would, so a
+model provider slots in behind it without touching parsing, validation or the checks. No
+model provider is implemented in this release, and the bounded retry in the diagram applies
+to one: retrying a deterministic reader returns the same answer.
 
-## Deployment
+## Deployment, as built
 
 ```mermaid
 flowchart LR
-    U["Reviewer"] --> W["Next.js<br/>Vercel"]
-    W --> API["FastAPI<br/>Azure App Service"]
-    API --> PG[("PostgreSQL<br/>Supabase")]
-    API -.optional.-> LLM["Gemini / Groq"]
-    API --> FS["Document storage"]
+    B["make web"] -->|runs the pipeline offline| J["JSON cases, summary,<br/>evaluation, BI export"]
+    J --> S["Static Next.js export"]
+    S --> V["Vercel"]
+    U["Reviewer"] --> V
 ```
 
-The LLM edge is dotted because it is optional: with the offline provider the system runs
-complete without it.
+The console is a static export. The pipeline runs offline and writes its results; the site
+reads them. There is no server to fail, no database to reach and no key to leak, and a
+decision made in the demo is stored in the browser only, which the console states on screen.
+
+The designed production shape, a FastAPI service over PostgreSQL, is what the schema,
+migrations and state machine are built for. It is not deployed.
 
 ## What this architecture refuses to do
 
