@@ -8,6 +8,7 @@ import { api, useWorkspace } from "@/components/api";
 import type { CaseDetail } from "@/components/CaseView";
 import { findingSentence, MISTAKES, NEXT_STEP, REASONS, statusOf } from "@/components/explain";
 import { money } from "@/components/format";
+import { Stamp } from "@/components/motion";
 import { Empty, StatusPill } from "@/components/ui";
 
 type Options = {
@@ -39,6 +40,7 @@ function Result({ c, ws }: { c: Outcome; ws: string }) {
             </h4>
             {!caught && <p>{c.scenario?.expect}</p>}
           </div>
+          {caught && <Stamp className="stamp-on-ink" size={88} tone="paper" word={target === "cleared" ? "PASSED" : "CAUGHT"} />}
         </div>
       )}
 
