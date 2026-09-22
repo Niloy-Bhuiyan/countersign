@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Status** | Design-stage. Mitigations are marked built or planned. |
+| **Status** | Built and deployed. Each mitigation is marked with what is true today. |
 | **Scope** | The Countersign system as designed, running on synthetic data. |
-| **Last reviewed** | 2026-09-20 |
+| **Last reviewed** | 2026-09-22 |
 
 ---
 
@@ -64,9 +64,9 @@ shaped the way it is.
 |---|---|
 | The model's only job is to fill a typed schema. There is no field it can write that means "approve". | Built (schema design) |
 | No check consults the document text. Matching, variance, duplicates and tax read persisted records and reference data the supplier does not control. | By design, [ADR-001](adr/ADR-001-llm-boundary.md) |
-| The agent reasons over check results, not over document text, and holds no write tool. | Planned, test planned |
-| Arithmetic validators run before persistence, so an injected total that does not tie is rejected regardless of what the text asked for. | Planned |
-| Extracted text is stored and rendered as data, never interpolated into a later prompt as instruction. | Planned |
+| The agent reasons over check results, not over document text, and holds no write tool. | Built, tested (`test_agent`) |
+| Arithmetic validators run before persistence, so an injected total that does not tie is rejected regardless of what the text asked for. | Built, measured: 9 wrong records stopped |
+| Extracted text is stored and rendered as data, never interpolated into a later prompt as instruction. | Built: no prompt is assembled from document text in this release |
 
 **Residual risk.** Injection can still corrupt *field values* — that is threat T2. What it
 cannot do is reach the decision, because nothing between the document and the decision takes
@@ -82,9 +82,9 @@ position the model associates with a different field.
 
 | | Status |
 |---|---|
-| Arithmetic validators: line totals, subtotal, tax total and grand total must tie. A misread number usually breaks one of them. | Planned |
-| Per-field confidence below threshold routes to human review. | Planned |
-| The three-way match compares against the purchase order, so a wrong quantity or price has to match records the supplier never saw. | Planned |
+| Arithmetic validators: line totals, subtotal, tax total and grand total must tie. A misread number usually breaks one of them. | Built, measured |
+| Per-field confidence below threshold routes to human review. | Not built: the offline reader has no confidence score; a model provider would add one |
+| The three-way match compares against the purchase order, so a wrong quantity or price has to match records the supplier never saw. | Built, tested, measured |
 
 **Residual risk.** A misread that is internally consistent *and* agrees with the purchase
 order is not detectable by this system. It is also, by construction, not a financial loss.
@@ -121,8 +121,8 @@ dashboard is worth building.
 becomes a reflex. The human gate stays in the diagram and leaves the system.
 
 **Mitigations.** Recommendations state findings in numbers rather than verdicts. Disagreeing
-with a recommendation requires a note. Time-to-decision is a dashboard metric, so implausibly
-fast approvals are visible.
+with a recommendation requires a note. Every decision is signed by a named reviewer and kept, with any overrule and its reason, in an
+append-only audit trail. Time-to-decision is not yet measured.
 
 **Residual risk.** This is the most likely way the design actually fails in practice, and it
 is a workload and staffing problem before it is a software one.
@@ -141,8 +141,8 @@ deleted.
 
 **The attack.** Invoice contents leave the network in a prompt.
 
-**Mitigations.** The default provider is offline and replays committed fixtures: the full
-system, the test suite and a demo run need no network. Provider, model and prompt version are
+**Mitigations.** The default reader is offline and deterministic: the full system, the test
+suite and the deployed API need no model provider at all. Provider, model and prompt version are
 recorded on every extraction, so what was sent where is answerable. No secrets in the
 repository; `.env` ignored, `.env.example` valueless.
 
@@ -159,6 +159,18 @@ an edge into `cleared` fails the suite. The agent's tool registry contains no wr
 
 **Residual risk.** A direct SQL update bypasses the guard. Database-level enforcement is a
 deliberate later decision, recorded in [ADR-006](adr/ADR-006-single-state-guard.md).
+
+### T9 — Abuse of the public API
+
+**The attack.** The deployed API accepts uploads and decisions from anyone. A visitor could
+fill a workspace with junk, or script requests.
+
+**Mitigations.** Workspaces are isolated, so junk in one never reaches another. Uploads are
+limited to 4 MB and to PDF, XLSX and CSV. The store is private; blob URLs return 403
+without the token, which never leaves the server. Decision rules are enforced server-side.
+
+**Residual risk.** No rate limiting and no authentication. Acceptable for a demonstration
+on synthetic data; not for anything holding real invoices.
 
 ## Out of scope
 
