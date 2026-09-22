@@ -15,6 +15,7 @@ import {
   statusOf,
 } from "./explain";
 import { date, money, quantity } from "./format";
+import { Stamp } from "./motion";
 import PriceHistory, { type History } from "./PriceHistory";
 import { Pill, StatusPill, Tip } from "./ui";
 
@@ -81,6 +82,12 @@ export type CaseDetail = {
     steps_used: number;
     tool_calls_used: number;
   };
+};
+
+const STAMP: Record<string, { word: string; tone: "ok" | "warn" | "bad" }> = {
+  approved: { word: "APPROVED", tone: "ok" },
+  held: { word: "ON HOLD", tone: "warn" },
+  escalated: { word: "ESCALATED", tone: "bad" },
 };
 
 function Lines({ c }: { c: CaseDetail }) {
@@ -194,6 +201,9 @@ export default function CaseView({
           <span>Issued <b>{date(c.issued)}</b></span>
           <span>Due <b>{date(c.invoice?.due ?? null)}</b></span>
         </div>
+        {decision && (
+          <Stamp key={decision} className="stamp-on-paper" word={STAMP[decision].word} tone={STAMP[decision].tone} />
+        )}
       </section>
 
       <section className="card summary">
@@ -227,7 +237,7 @@ export default function CaseView({
       {c.results.length > 0 && (
         <section className="card">
           <div className="card-head"><h3>The four checks</h3></div>
-          <div className="checklist">
+          <div className="checklist" key={c.id}>
             {CHECK_ORDER.map((code) => {
               const mine = c.results.filter((r) => r.check_code === code);
               const failed = mine.filter((r) => r.outcome === "failed");
