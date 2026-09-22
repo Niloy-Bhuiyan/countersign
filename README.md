@@ -4,25 +4,27 @@ Invoice-to-payment reconciliation with document extraction, deterministic three-
 matching, and an approval-gated agent that recommends but never pays.
 
 **Live console: [countersign-zeta.vercel.app](https://countersign-zeta.vercel.app)** ·
-[Invoice lab](https://countersign-zeta.vercel.app/lab/) ·
+[Try it yourself](https://countersign-zeta.vercel.app/lab/) ·
 [API reference](https://countersign-zeta.vercel.app/api/docs) ·
 [Evaluation report](eval/report.md)
 
 ## Try it
 
-- **Review.** A ledger of 500 invoices beside the open case: findings in numbers, the
-  vendor's price history drawn against the invoice, the lines against the order and
-  deliveries, and the source document. `j`/`k` to move, `a`/`h`/`e` to decide.
-- **Sign a decision.** It is recorded on the server, checked by the same state machine as
-  the pipeline, and kept in an append-only audit trail you can export. Overruling the
-  recommendation requires a written reason; the server refuses it otherwise.
-- **The invoice lab.** Pick a vendor and something to get wrong: overbill, overprice,
-  misstate the VAT, inflate the order itself, change the currency, resubmit. The server
-  raises an order at that vendor's usual prices, records the delivery, writes the
-  supplier's invoice as a PDF, and **reads that PDF back** through the pipeline. Each
-  scenario is caught by the check it targets; the clean one clears.
-- **Upload your own** PDF, XLSX or CSV. Download a corpus invoice and upload it again: it is
-  caught as a duplicate, because the live ledger already knows every corpus invoice.
+- **Overview** explains what Countersign is, what every number means, and the four checks
+  in plain language. Every figure has an explanation behind an info button, and a Help
+  panel with a glossary sits in the same place on every page.
+- **Review invoices.** Pick an invoice and read what's wrong in one sentence ("the price is
+  about 81% higher than this supplier's usual"), the suggested next step and why, the four
+  checks, the invoice against the purchase order, and a chart of the supplier's past prices.
+  A short, skippable guide explains the screen on a first visit.
+- **Decide.** Approve, hold or escalate. The decision is recorded on the server, checked by
+  the same state machine as the pipeline, and kept in a decision history you can export.
+  Choosing differently from the suggestion requires a written reason; the server refuses it
+  otherwise.
+- **Try it yourself.** Pick a supplier and a mistake to plant: overbill, overcharge, wrong
+  VAT, an inflated order, wrong currency, or a resubmitted invoice. The server creates a
+  real PDF and reads it back through the pipeline, then tells you whether it caught the
+  mistake. You can also upload your own PDF, XLSX or CSV.
 
 Everything you do lives in your own workspace, carried in the URL, so it can be shared and
 nobody else's clicks change yours.
