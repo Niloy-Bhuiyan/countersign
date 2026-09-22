@@ -1,17 +1,6 @@
 "use client";
 
-import {
-  BarChart3,
-  BookOpen,
-  CircleHelp,
-  FileCheck2,
-  FlaskConical,
-  History,
-  Home,
-  Inbox,
-  Link2,
-  X,
-} from "lucide-react";
+import { Check, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -19,12 +8,11 @@ import { shareLink, useWorkspace } from "./api";
 import { CHECK_ORDER, CHECKS, TERMS } from "./explain";
 
 const TABS = [
-  { href: "/", label: "Overview", icon: Home },
-  { href: "/review/", label: "Review invoices", icon: Inbox },
-  { href: "/lab/", label: "Try it yourself", icon: FlaskConical },
-  { href: "/decisions/", label: "Decision history", icon: History },
-  { href: "/dashboard/", label: "Reports", icon: BarChart3 },
-  { href: "/method/", label: "How accurate?", icon: BookOpen },
+  { href: "/review/", label: "Review" },
+  { href: "/lab/", label: "Try it" },
+  { href: "/decisions/", label: "History" },
+  { href: "/dashboard/", label: "Reports" },
+  { href: "/method/", label: "Accuracy" },
 ];
 
 function HelpPanel({ onClose }: { onClose: () => void }) {
@@ -39,8 +27,7 @@ function HelpPanel({ onClose }: { onClose: () => void }) {
       <div className="scrim" onClick={onClose} aria-hidden />
       <aside className="panel" role="dialog" aria-modal="true" aria-labelledby="help-title">
         <div className="panel-head">
-          <CircleHelp size={20} className="muted" aria-hidden />
-          <h2 id="help-title">Help and glossary</h2>
+          <h2 id="help-title">Help</h2>
           <button className="btn btn-ghost btn-sm" style={{ marginLeft: "auto" }} onClick={onClose} aria-label="Close help">
             <X size={18} aria-hidden />
           </button>
@@ -105,29 +92,26 @@ export default function Masthead() {
     <>
       <header className="header">
         <Link href="/" className="brand" aria-label="Countersign home">
-          <span className="brand-mark"><FileCheck2 size={18} aria-hidden /></span>
-          Countersign
+          <span className="brand-mark"><Check size={15} strokeWidth={3} aria-hidden /></span>
+          <span className="word">Countersign</span>
         </Link>
         <nav className="nav" aria-label="Main">
-          {TABS.map(({ href, label, icon: Icon }) => (
-            <Link key={href} href={href} aria-current={current(href) ? "page" : undefined} title={label}>
-              <Icon size={16} aria-hidden />
-              <span className="label">{label}</span>
+          {TABS.map(({ href, label }) => (
+            <Link key={href} href={href} aria-current={current(href) ? "page" : undefined}>
+              {label}
             </Link>
           ))}
         </nav>
         <div className="header-end">
-          <span className="demo-pill" title="Every supplier and invoice here is made up. No real company is involved.">
-            Demo · made-up data
-          </span>
           {ws && (
-            <button className="btn btn-ghost btn-sm" onClick={copy} title="Copy a link to your workspace">
-              <Link2 size={15} aria-hidden /> {copied ? "Link copied" : "Share"}
+            <button className="btn btn-ghost btn-sm hide-sm" onClick={copy} title="Copy a link to your workspace">
+              {copied ? "Link copied" : "Share"}
             </button>
           )}
           <button className="btn btn-sm" onClick={() => setHelp(true)} aria-haspopup="dialog">
-            <CircleHelp size={15} aria-hidden /> Help
+            Help
           </button>
+          <Link className="btn btn-primary btn-sm hide-sm" href="/review/">Open review</Link>
         </div>
       </header>
       {help && <HelpPanel onClose={() => setHelp(false)} />}

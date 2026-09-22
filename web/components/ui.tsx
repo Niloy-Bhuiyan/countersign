@@ -1,20 +1,12 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, CircleHelp, Info, XCircle } from "lucide-react";
+import { Info } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import type { Status, Tone } from "./explain";
 
-const TONE_ICON = { ok: CheckCircle2, warn: AlertTriangle, bad: XCircle, info: Info, muted: CircleHelp };
-
-/** Status as a pill: icon plus word, colour secondary. Never wraps. */
+/** Status as a pill: a coloured dot plus a word, so colour is never the only signal. Never wraps. */
 export function Pill({ tone, children, icon = true }: { tone: Tone; children: React.ReactNode; icon?: boolean }) {
-  const Icon = TONE_ICON[tone];
-  return (
-    <span className={`pill pill-${tone}`}>
-      {icon && <Icon size={13} aria-hidden />}
-      {children}
-    </span>
-  );
+  return <span className={`pill pill-${tone}${icon ? "" : " nodot"}`}>{children}</span>;
 }
 
 export function StatusPill({ status }: { status: Status }) {
