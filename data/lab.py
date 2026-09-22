@@ -161,7 +161,7 @@ def compose(
 
     if tamper == "resubmit":
         if previous is None:
-            raise ValueError("there is no earlier lab invoice to resubmit")
+            raise ValueError("create a test invoice first, then send it again")
         # The same attachment sent again, the way a supplier's accounts system
         # re-sends an unpaid invoice: identical bytes, identical number.
         return Scenario(

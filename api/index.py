@@ -31,9 +31,16 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile  # noqa: E402
 from fastapi.responses import JSONResponse, Response  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
-from countersign.blobstore import MemoryBlob, VercelBlob, get_json, put_json  # noqa: E402
+from countersign.blobstore import (  # noqa: E402
+    BlobExists,
+    MemoryBlob,
+    StorageError,
+    VercelBlob,
+    get_json,
+    put_json,
+)
 from countersign.decisions import DecisionError  # noqa: E402
-from countersign.workspace import Snapshot, Workspace, WorkspaceError  # noqa: E402
+from countersign.workspace import MAX_BYTES, Snapshot, Workspace, WorkspaceError  # noqa: E402
 from data.catalogue import BY_SKU  # noqa: E402
 from data.lab import TAMPERS, Scenario, compose  # noqa: E402
 
@@ -73,6 +80,33 @@ async def _workspace_error(_request, exc: WorkspaceError):
 @app.exception_handler(DecisionError)
 async def _decision_error(_request, exc: DecisionError):
     return JSONResponse({"detail": str(exc)}, status_code=422)
+
+
+@app.exception_handler(BlobExists)
+async def _blob_exists(_request, _exc: BlobExists):
+    return JSONResponse({"detail": "two saves collided; try again"}, status_code=409)
+
+
+@app.exception_handler(StorageError)
+async def _storage_error(_request, _exc: StorageError):
+    return JSONResponse(
+        {"detail": "storage is unavailable right now; try again in a moment"}, status_code=503
+    )
+
+
+#: Served back to the browser, an uploaded file is inert: no scripts, no sniffing.
+FILE_HEADERS = {
+    "cache-control": "private, max-age=3600",
+    "content-security-policy": "sandbox",
+    "x-content-type-options": "nosniff",
+}
+
+
+def _csv_cell(value):
+    """Neutralise text a spreadsheet would run as a formula (CSV injection)."""
+    if isinstance(value, str) and value[:1] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + value
+    return value
 
 
 @app.get("/api/health")
@@ -145,6 +179,7 @@ def run_lab(ws: str, body: LabRequest):
     space = workspace(ws)
     if body.tamper not in TAMPERS:
         raise HTTPException(400, "unknown scenario")
+    space.ensure_room()
     previous = _previous_scenario(space)
     sequence = len(space.store.list(f"{space.prefix}lab/")) + 1
     try:
@@ -163,7 +198,12 @@ def run_lab(ws: str, body: LabRequest):
         raise HTTPException(400, str(exc)) from exc
 
     if body.tamper != "resubmit":
+        # A resubmission reuses the earlier order and the stored original: the same
+        # bytes sent twice. Stored objects are never overwritten.
         space.add_order(scenario.order_row, scenario.delivery_row)
+        space.store.put(
+            f"{space.prefix}lab-docs/{scenario.filename}", scenario.document, "application/pdf"
+        )
     put_json(
         space.store,
         f"{space.prefix}lab/{sequence:04d}.json",
@@ -175,9 +215,6 @@ def run_lab(ws: str, body: LabRequest):
             "tamper": scenario.tamper,
         },
     )
-    space.store.put(
-        f"{space.prefix}lab-docs/{scenario.filename}", scenario.document, "application/pdf"
-    )
     detail = space.process(
         scenario.filename, scenario.document, origin="lab", note=TAMPERS[scenario.tamper]["label"]
     )
@@ -188,7 +225,7 @@ def run_lab(ws: str, body: LabRequest):
 @app.post("/api/workspaces/{ws}/documents")
 async def upload(ws: str, file: Annotated[UploadFile, File()], note: Annotated[str, Form()] = ""):
     space = workspace(ws)
-    data = await file.read()
+    data = await file.read(MAX_BYTES + 1)
     return space.process(file.filename or "upload", data, origin="upload", note=note[:200])
 
 
@@ -211,9 +248,7 @@ def get_file(ws: str, filename: str):
     if found is None:
         raise HTTPException(404, "no such document")
     data, content_type = found
-    return Response(
-        data, media_type=content_type, headers={"cache-control": "private, max-age=3600"}
-    )
+    return Response(data, media_type=content_type, headers=FILE_HEADERS)
 
 
 class DecisionRequest(BaseModel):
@@ -250,7 +285,7 @@ def decisions_csv(ws: str):
     ]
     writer = csv.DictWriter(buffer, fieldnames=columns, extrasaction="ignore")
     writer.writeheader()
-    writer.writerows(events)
+    writer.writerows({k: _csv_cell(v) for k, v in event.items()} for event in events)
     return Response(
         buffer.getvalue(),
         media_type="text/csv",

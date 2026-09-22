@@ -40,6 +40,8 @@ ALLOWED = {
     ".csv": "text/csv",
 }
 MAX_BYTES = 4 * 1024 * 1024
+#: A public demo workspace holds this many documents, so one link cannot fill the store.
+MAX_DOCUMENTS = 200
 
 
 class WorkspaceError(ValueError):
@@ -120,6 +122,15 @@ class Workspace:
     def _sequence(self) -> int:
         return len(self.store.list(f"{self.prefix}cases/")) + 1
 
+    def ensure_room(self) -> int:
+        """The next document's sequence number, or refuse if the workspace is full."""
+        sequence = self._sequence()
+        if sequence > MAX_DOCUMENTS:
+            raise WorkspaceError(
+                f"this workspace is full ({MAX_DOCUMENTS} documents); open a new one"
+            )
+        return sequence
+
     def process(self, filename: str, data: bytes, *, origin: str, note: str = "") -> dict:
         suffix = Path(filename).suffix.lower()
         if suffix not in ALLOWED:
@@ -129,7 +140,7 @@ class Workspace:
         if len(data) > MAX_BYTES:
             raise WorkspaceError("files over 4 MB are not accepted")
 
-        sequence = self._sequence()
+        sequence = self.ensure_room()
         stem = "LAB" if origin == "lab" else "UPL"
         document_id = f"{stem}-{self.id[:4].upper()}{sequence:03d}"
 
