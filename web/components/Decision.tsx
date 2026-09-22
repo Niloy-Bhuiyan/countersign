@@ -161,12 +161,12 @@ export default function Decision({
           <div className="decide-fields">
             <div className="field">
               <label htmlFor="reviewer">Your name</label>
-              <input id="reviewer" className="input" value={reviewer} autoComplete="name" placeholder="e.g. Nusrat Rahman"
+              <input id="reviewer" className="input" value={reviewer} autoComplete="name" placeholder="e.g. Nusrat Rahman" maxLength={80}
                 onChange={(e) => setReviewer(e.target.value)} />
             </div>
             <div className="field">
               <label htmlFor="note">{needsReason ? "Reason (required)" : "Note (optional)"}</label>
-              <textarea id="note" className="textarea" value={note} onChange={(e) => setNote(e.target.value)}
+              <textarea id="note" className="textarea" value={note} maxLength={1000} onChange={(e) => setNote(e.target.value)}
                 placeholder={needsReason ? "Why choose differently from the suggestion?" : "Optional"} />
               {needsReason && <span className="hint">At least 10 characters.</span>}
             </div>

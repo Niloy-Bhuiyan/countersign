@@ -133,6 +133,11 @@ export default function Lab() {
 
   async function upload(f: File | undefined) {
     if (!ws || !f) return;
+    if (f.size > 4 * 1024 * 1024) {
+      setOutcome(null);
+      setError("That file is over 4 MB. Upload a smaller invoice.");
+      return;
+    }
     setBusy("upload");
     setError(null);
     setOutcome(null);

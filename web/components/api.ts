@@ -63,16 +63,24 @@ export function saveReviewer(name: string): void {
 export class ApiError extends Error {}
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, init);
+  let response: Response;
+  try {
+    response = await fetch(path, init);
+  } catch {
+    throw new ApiError("Can't reach the server. Check your connection and try again.");
+  }
   if (!response.ok) {
-    let detail = `${response.status} ${response.statusText}`;
+    let detail =
+      response.status >= 500
+        ? "Something went wrong on the server. Try again in a moment."
+        : `${response.status} ${response.statusText}`;
     try {
       const body = await response.json();
       if (typeof body.detail === "string") detail = body.detail;
     } catch {
       /* not JSON */
     }
-    throw new ApiError(detail);
+    throw new ApiError(detail.charAt(0).toUpperCase() + detail.slice(1));
   }
   return response.json() as Promise<T>;
 }
