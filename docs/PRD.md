@@ -153,7 +153,7 @@ would be visible in the history. Results are from [`eval/report.md`](../eval/rep
 | **M1** | Schema, state machine, money, synthetic corpus, ground truth | Done |
 | **M2** | Ingestion, extraction, validators, offline provider | Done |
 | **M3** | The four checks, each with its own tests | Done |
-| **M4** | Agent, citation verification, approval flow | Done; approval is browser-local in the demo |
+| **M4** | Agent, citation verification, approval flow | Done; approvals recorded and enforced on the server |
 | **M5** | Evaluation harness and first measured results | Done |
-| **M6** | API, review queue, dashboard, export | Console and export done; API not built |
+| **M6** | API, review queue, dashboard, export | Done: live API, lab, uploads, audit trail |
 | **M7** | Docs, deployment, manual baseline | Docs and deployment done; baseline not run |
