@@ -62,3 +62,22 @@ wrong thing. Vendors legitimately differ in price; the question is whether *this
 changed.
 
 **A model asked whether the price looks unusual.** Rejected under [ADR-001](ADR-001-llm-boundary.md).
+
+## Addendum, after the first evaluation: a materiality floor
+
+The first run produced 58 false positives on clean invoices, most from this check. With the
+order history in place, a vendor's past prices for an item sat within a fraction of a percent
+of each other, the MAD was tiny, and a 2.6% price move scored z = 13.6. The statistic was
+right that the price was unusual. It was wrong that the price mattered.
+
+A line now fails only when it is both a robust outlier (z > 3.5) **and** more than
+`price_variance_min_pct` (10%) above the median. The evaluation runs both configurations and
+keeps both result files:
+
+| | Without floor | With floor |
+|---|---|---|
+| Clean invoices with a failed check | 58 | 0 |
+| Price-variance strict recall | 100% | 100% |
+| Auto-cleared | 60.8% | 71.8% |
+
+10% is a policy choice, not a finding, and it is configuration a controller can change.
