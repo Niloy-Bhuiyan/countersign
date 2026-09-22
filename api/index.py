@@ -15,7 +15,7 @@ import csv
 import io
 import os
 import sys
-from datetime import date
+from datetime import date, timedelta
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated
@@ -97,14 +97,22 @@ def lab_options():
                 for line in o.lines
             }
         )
+        # Whether any item has enough earlier prices for the variance check to judge
+        # a lab invoice. Without that, "inflate the order" can only make it abstain.
+        order_day = date.today() - timedelta(days=12)
+        ready = any(
+            len(reference.price_history(vendor.id, sku, order_day, 365)) >= 5 for sku in skus
+        )
         vendors.append(
             {
                 "id": vendor.id,
                 "name": vendor.legal_name,
                 "category": category_of(skus[0]) if skus else "Uncategorised",
                 "items": [BY_SKU[s].description for s in skus if s in BY_SKU],
+                "historyReady": ready,
             }
         )
+    vendors.sort(key=lambda v: (not v["historyReady"], v["name"]))
     return {"vendors": vendors, "tampers": [{"id": k, **v} for k, v in TAMPERS.items()]}
 
 
