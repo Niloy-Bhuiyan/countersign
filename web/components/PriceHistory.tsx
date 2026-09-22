@@ -32,8 +32,8 @@ export default function PriceHistory({ h, description }: { h: History; descripti
     );
   }
 
-  const width = 640;
-  const height = 150;
+  const width = 960;
+  const height = 170;
   const pad = { l: 70, r: 110, t: 16, b: 26 };
   const median = Number(h.median);
   const mad = Number(h.mad);
@@ -49,20 +49,20 @@ export default function PriceHistory({ h, description }: { h: History; descripti
 
   return (
     <figure style={{ margin: 0 }}>
-      <p className="small" style={{ fontWeight: 700, marginBottom: 4 }}>{description}</p>
+      <p className="small" style={{ fontWeight: 500, marginBottom: 4 }}>{description}</p>
       <svg className="chart" viewBox={`0 0 ${width} ${height}`} width="100%" role="img"
         aria-label={`${description}: charged ${money(h.billed)}; usual price ${money(h.median)}; flagged above ${money(limit.toFixed(2))}.`}>
-        <rect x={pad.l} y={pad.t} width={width - pad.l - pad.r} height={Math.max(0, y(limit) - pad.t)} fill="#fef2f2" />
+        <rect x={pad.l} y={pad.t} width={width - pad.l - pad.r} height={Math.max(0, y(limit) - pad.t)} fill="#fdf1f0" />
         <line x1={pad.l} x2={width - pad.r} y1={y(limit)} y2={y(limit)} stroke="#ef4444" strokeDasharray="5 4" strokeWidth={1.5} />
-        <line x1={pad.l} x2={width - pad.r} y1={y(median)} y2={y(median)} stroke="#94a3b8" strokeWidth={1.5} />
+        <line x1={pad.l} x2={width - pad.r} y1={y(median)} y2={y(median)} stroke="#a3a3a3" strokeWidth={1.5} />
         <text x={pad.l - 8} y={y(median) + 4} textAnchor="end">{money(h.median)}</text>
         <text x={pad.l - 8} y={y(limit) + 4} textAnchor="end" style={{ fill: "#b91c1c" }}>{money(limit.toFixed(2))}</text>
         {h.points.map((p, i) => (
-          <circle key={p.po + i} cx={x(i)} cy={y(Number(p.price))} r={4.5} fill="#2563eb">
+          <circle key={p.po + i} cx={x(i)} cy={y(Number(p.price))} r={4.5} fill="#0a0a0a">
             <title>{`${p.date}: ${money(p.price)}`}</title>
           </circle>
         ))}
-        <circle cx={bx} cy={y(billed)} r={7} fill={flagged ? "#dc2626" : "#16a34a"} stroke="#fff" strokeWidth={2} />
+        <circle cx={bx} cy={y(billed)} r={7} fill={flagged ? "#ef4444" : "#22a06b"} stroke="#fff" strokeWidth={2} />
         <text x={bx + 13} y={y(billed) + 4} style={{ fill: flagged ? "#b91c1c" : "#15803d", fontWeight: 700 }}>
           {money(h.billed)}
         </text>
@@ -70,15 +70,15 @@ export default function PriceHistory({ h, description }: { h: History; descripti
         <text x={bx} y={height - 6} textAnchor="middle">This invoice</text>
       </svg>
       <div className="legend">
-        <span><i style={{ background: "#2563eb", borderRadius: 999 }} /> Past prices from this supplier</span>
-        <span><i style={{ background: "#94a3b8", height: 3 }} /> Usual price (middle value)</span>
-        <span><i style={{ background: "#ef4444", height: 3 }} /> Flagged above this line</span>
-        <span><i style={{ background: flagged ? "#dc2626" : "#16a34a", borderRadius: 999 }} /> This invoice</span>
+        <span><i style={{ background: "#0a0a0a", borderRadius: 999 }} /> Past prices</span>
+        <span><i style={{ background: "#a3a3a3", height: 3 }} /> Usual</span>
+        <span><i style={{ background: "#ef4444", height: 3 }} /> Flag line</span>
+        <span><i style={{ background: flagged ? "#ef4444" : "#22a06b", borderRadius: 999 }} /> This invoice</span>
       </div>
       <p className="small soft" style={{ marginTop: 8 }}>
         {flagged
-          ? `Charged ${money(h.billed)}, about ${pct}% above the usual ${money(h.median)}. That's above the red line, so it was flagged.`
-          : `Charged ${money(h.billed)}, close to the usual ${money(h.median)}. That's below the red line, so the price is fine.`}
+          ? `${pct}% above the usual ${money(h.median)}, so it was flagged.`
+          : `Close to the usual ${money(h.median)}. Fine.`}
       </p>
     </figure>
   );

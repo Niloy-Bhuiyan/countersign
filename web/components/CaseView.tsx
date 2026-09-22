@@ -1,23 +1,6 @@
 "use client";
 
-import {
-  AlertTriangle,
-  Building2,
-  Calculator,
-  Calendar,
-  Check,
-  CheckCircle2,
-  CircleHelp,
-  Copy,
-  Eye,
-  EyeOff,
-  FileText,
-  Hash,
-  Lightbulb,
-  PackageCheck,
-  TrendingUp,
-  XCircle,
-} from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import type { DecisionEvent } from "./api";
 import Decision from "./Decision";
@@ -100,51 +83,16 @@ export type CaseDetail = {
   };
 };
 
-const CHECK_ICONS: Record<string, React.ElementType> = {
-  THREE_WAY_MATCH: PackageCheck,
-  PRICE_VARIANCE: TrendingUp,
-  DUPLICATE_INVOICE: Copy,
-  TAX_ARITHMETIC: Calculator,
-};
-
-function Progress({ decided }: { decided: boolean }) {
-  const steps = [
-    { label: "Received", done: true },
-    { label: "Read", done: true },
-    { label: "Checked", done: true },
-    { label: decided ? "Decided" : "Your decision", done: decided },
-  ];
-  return (
-    <div className="progress" aria-label="Progress">
-      {steps.map((s, i) => (
-        <span key={s.label} style={{ display: "inline-flex", alignItems: "center" }}>
-          {i > 0 && <span className="line" aria-hidden />}
-          <span className="p">
-            <span className={`dot${s.done ? "" : " now"}`} aria-hidden>
-              {s.done ? <Check size={12} /> : <span style={{ fontSize: 11, fontWeight: 800 }}>{i + 1}</span>}
-            </span>
-            {s.label}
-          </span>
-        </span>
-      ))}
-    </div>
-  );
-}
-
 function Lines({ c }: { c: CaseDetail }) {
   const inv = c.invoice!;
   const order = c.order;
   return (
     <div className="card">
       <div className="card-head">
-        <FileText size={18} className="muted" aria-hidden />
         <div>
-          <h3>Invoice compared with the purchase order</h3>
+          <h3>Invoice vs. purchase order</h3>
           <p className="card-sub">
-            {order
-              ? `Purchase order ${order.number}, raised ${date(order.orderedAt)}. ${order.deliveries.length} delivery note(s) on record.`
-              : "No purchase order found for this invoice."}{" "}
-            Cells in red don&rsquo;t match.
+            {order ? `${order.number} · ${date(order.orderedAt)} · ${order.deliveries.length} delivered` : "No purchase order found"}
           </p>
         </div>
       </div>
@@ -183,7 +131,7 @@ function Lines({ c }: { c: CaseDetail }) {
             })}
             <tr><td colSpan={6} className="r muted">Subtotal</td><td className="r">{money(inv.subtotal)}</td></tr>
             <tr><td colSpan={6} className="r muted">VAT</td><td className="r">{money(inv.tax)}</td></tr>
-            <tr className="total"><td colSpan={6} className="r">Amount to pay</td><td className="r">{c.currency} {money(inv.total)}</td></tr>
+            <tr className="total"><td colSpan={6} className="r">Total</td><td className="r">{c.currency} {money(inv.total)}</td></tr>
           </tbody>
         </table>
       </div>
@@ -219,111 +167,85 @@ export default function CaseView({
   const itemName = (sku: string) => c.invoice?.lines.find((l) => l.sku === sku)?.description ?? sku;
 
   const headline = unreadable
-    ? "We couldn't read this invoice"
+    ? "Couldn't read this invoice"
     : problems.length
       ? `${problems.length} problem${problems.length === 1 ? "" : "s"} found`
       : unsure.length
-        ? "Nothing wrong found, but one check couldn't decide"
-        : "Nothing wrong found";
+        ? "One check couldn't decide"
+        : "Nothing wrong";
 
   return (
     <div className="detail">
       <section className="card detail-head">
         <div>
           <div className="kicker">
-            {c.origin === "lab" ? <Pill tone="info" icon={false}>Your test invoice</Pill>
-              : c.origin === "upload" ? <Pill tone="info" icon={false}>Your upload</Pill> : null}
-            <span>Invoice from</span>
+            {c.origin === "lab" ? <Pill tone="info">Your test</Pill>
+              : c.origin === "upload" ? <Pill tone="info">Your upload</Pill> : null}
+            <span className="mono">{c.number ?? "No invoice number"}</span>
           </div>
           <h1>{c.vendor ?? c.invoice?.vendorAsPrinted ?? "Unknown supplier"}</h1>
         </div>
         <div className="amount">
-          <div className="l">Amount to pay</div>
           <div className="v">{c.total ? `${c.currency} ${money(c.total)}` : "—"}</div>
-          <div style={{ marginTop: 6 }}><StatusPill status={status} /></div>
+          <div style={{ marginTop: 8 }}><StatusPill status={status} /></div>
         </div>
         <div className="facts">
-          <span><Hash size={14} aria-hidden /> Invoice <b className="mono">{c.number ?? "unreadable"}</b></span>
-          <span><Building2 size={14} aria-hidden /> Purchase order <b className="mono">{c.po ?? "—"}</b></span>
-          <span><Calendar size={14} aria-hidden /> Issued {date(c.issued)}</span>
-          <span><Calendar size={14} aria-hidden /> Due {date(c.invoice?.due ?? null)}</span>
+          <span>PO <b className="mono">{c.po ?? "—"}</b></span>
+          <span>Issued <b>{date(c.issued)}</b></span>
+          <span>Due <b>{date(c.invoice?.due ?? null)}</b></span>
         </div>
-        <Progress decided={Boolean(decision)} />
       </section>
 
-      <section className={`card summary`}>
+      <section className="card summary">
         <h2>
-          {unreadable ? <AlertTriangle size={20} color="var(--warn)" aria-hidden />
-            : problems.length ? <XCircle size={20} color="var(--bad)" aria-hidden />
-            : unsure.length ? <CircleHelp size={20} color="var(--warn)" aria-hidden />
-            : <CheckCircle2 size={20} color="var(--ok)" aria-hidden />}
+          <span className={`dot dot-${problems.length ? "bad" : unreadable || unsure.length ? "warn" : "ok"}`} aria-hidden />
           {headline}
         </h2>
-        <ul>
-          {unreadable && (
-            <li><AlertTriangle size={16} color="var(--warn)" aria-hidden />{REASONS[c.reason!]?.long ?? c.reason}</li>
-          )}
-          {problems.map((r, i) => (
-            <li key={`p${i}`}><XCircle size={16} color="var(--bad)" aria-hidden />{findingSentence(r)}</li>
-          ))}
-          {unsure.map((r, i) => (
-            <li key={`u${i}`}><CircleHelp size={16} color="var(--warn)" aria-hidden />{findingSentence(r)}</li>
-          ))}
-          {!unreadable && problems.length === 0 && unsure.length === 0 && (
-            <li><CheckCircle2 size={16} color="var(--ok)" aria-hidden />All four checks passed. The quantities, prices, tax and invoice number are all as expected.</li>
-          )}
-        </ul>
+        {(unreadable || problems.length > 0 || unsure.length > 0) && (
+          <ul>
+            {unreadable && <li><span className="dot dot-warn" aria-hidden />{REASONS[c.reason!]?.long ?? c.reason}</li>}
+            {problems.map((r, i) => <li key={`p${i}`}><span className="dot dot-bad" aria-hidden />{findingSentence(r)}</li>)}
+            {unsure.map((r, i) => <li key={`u${i}`}><span className="dot dot-warn" aria-hidden />{findingSentence(r)}</li>)}
+          </ul>
+        )}
         <div className="next-step">
-          <Lightbulb size={20} color="var(--primary)" aria-hidden style={{ flex: "none", marginTop: 2 }} />
-          <div>
+          <div style={{ flex: "1 1 240px" }}>
             <div className="label">Suggested next step</div>
             <div className="what">{next.what}</div>
-            <div className="why">{next.why}</div>
-            {c.recommendation && (
-              <details className="tech">
-                <summary>Why this suggestion?</summary>
-                <div className="body">
-                  {c.recommendation.rationale.slice(1).map((s, i) => <p key={i} style={{ margin: "4px 0" }}>{s.text}</p>)}
-                  <p style={{ marginTop: 8 }}>
-                    Drafted by a rule-based assistant ({c.recommendation.agent_version}) that can only read records, never
-                    change them. Every claim above points to a record that exists. You make the decision.
-                  </p>
-                </div>
-              </details>
-            )}
+            <details className="tech">
+              <summary>Why</summary>
+              <div className="body">
+                <p>{next.why}</p>
+                {c.recommendation?.rationale.slice(1).map((s, i) => <p key={i} style={{ margin: "6px 0 0" }}>{s.text}</p>)}
+              </div>
+            </details>
           </div>
+          {ws && <a className="btn btn-sm" style={{ background: "#fff", color: "var(--fg)" }} href="#decide">Decide</a>}
         </div>
       </section>
 
       {c.results.length > 0 && (
         <section className="card">
-          <div className="card-head">
-            <PackageCheck size={18} className="muted" aria-hidden />
-            <div>
-              <h3>The four checks</h3>
-              <p className="card-sub">Each one answers a simple question. None of them uses AI; the rules are fixed and repeatable.</p>
-            </div>
-          </div>
+          <div className="card-head"><h3>The four checks</h3></div>
           <div className="checklist">
             {CHECK_ORDER.map((code) => {
               const mine = c.results.filter((r) => r.check_code === code);
               const failed = mine.filter((r) => r.outcome === "failed");
               const abstained = mine.filter((r) => r.outcome === "abstained");
               const tone = failed.length ? "bad" : abstained.length ? "warn" : "ok";
-              const Icon = CHECK_ICONS[code];
               const said = failed.length ? failed : abstained;
               return (
                 <div className="check-row" key={code}>
-                  <span className={`ic tone-${tone}`}><Icon size={18} aria-hidden /></span>
+                  <span className={`dot dot-${tone}`} aria-hidden />
                   <div>
                     <h4>{CHECKS[code].name}</h4>
-                    <div className="q">{CHECKS[code].question}</div>
                     <div className="says">
                       {said.length ? said.map((r, i) => <p key={i}>{findingSentence(r)}</p>) : passSentence(code)}
                     </div>
                     <details className="tech">
-                      <summary>Show the technical details</summary>
+                      <summary>Details</summary>
                       <div className="body">
+                        <p style={{ margin: "0 0 6px" }}>{CHECKS[code].plain}</p>
                         {mine.map((r, i) => (
                           <p key={i} style={{ margin: "4px 0" }}>
                             {r.explanation}
@@ -335,7 +257,7 @@ export default function CaseView({
                       </div>
                     </details>
                   </div>
-                  <Pill tone={tone}>{failed.length ? "Problem" : abstained.length ? "Couldn't decide" : "Passed"}</Pill>
+                  <span className="xs muted">{failed.length ? "Problem" : abstained.length ? "Unsure" : "Passed"}</span>
                 </div>
               );
             })}
@@ -347,28 +269,20 @@ export default function CaseView({
 
       {history.length > 0 && (
         <section className="card card-pad stack">
-          <div>
-            <h3 style={{ fontSize: 16, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
-              Is the price normal for this supplier?
-              <Tip>
-                Each blue dot is a price this supplier charged us for the same item on an earlier order. The grey line is
-                their usual price. A price is only flagged if it is above the red line: unusually high <b>and</b> at least
-                10% above usual.
-              </Tip>
-            </h3>
-            <p className="card-sub">Compares this invoice with the supplier&rsquo;s own past prices for the same item.</p>
-          </div>
+          <h3 style={{ fontSize: 17, display: "flex", alignItems: "center", gap: 6 }}>
+            Price vs. this supplier&rsquo;s history
+            <Tip>
+              Each dot is a price this supplier charged for the same item before. A price is only flagged above the red
+              line: unusually high <b>and</b> at least 10% above usual.
+            </Tip>
+          </h3>
           {history.map((h) => <PriceHistory key={h.lineNo} h={h} description={itemName(h.sku)} />)}
         </section>
       )}
 
       <section className="card">
-        <div className="card-head">
-          <FileText size={18} className="muted" aria-hidden />
-          <div>
-            <h3>Original document</h3>
-            <p className="card-sub">The file exactly as the supplier sent it ({c.format.toUpperCase()}).</p>
-          </div>
+        <div className="card-head" style={{ paddingBottom: 20 }}>
+          <h3>Original file <span className="xs muted">{c.format.toUpperCase()}</span></h3>
           <div className="end" style={{ display: "flex", gap: 8 }}>
             {previewable && (
               <button className="btn btn-sm" onClick={() => setShowDoc((v) => !v)} aria-expanded={showDoc}>
@@ -380,18 +294,15 @@ export default function CaseView({
         </div>
         {showDoc && previewable && <iframe className="doc-frame" src={documentUrl} title={`Original document ${c.file}`} />}
         {!previewable && (
-          <p className="card-pad small soft">
-            {c.format !== "pdf" ? "Spreadsheets can't be previewed here. Download to open it." : REASONS[c.extraction.intake]?.long}
+          <p className="small soft" style={{ padding: "0 28px 24px" }}>
+            {c.format !== "pdf" ? "Spreadsheets can't be previewed. Download to open it." : REASONS[c.extraction.intake]?.long}
           </p>
         )}
       </section>
 
       {ws && (
         <section className="card card-pad stack" id="decide">
-          <div>
-            <h3 style={{ fontSize: 16, fontWeight: 700 }}>Your decision</h3>
-            <p className="card-sub">Nothing happens to this invoice until someone decides.</p>
-          </div>
+          <h3 style={{ fontSize: 17 }}>Your decision</h3>
           <Decision ws={ws} invoiceId={c.id} action={c.action} events={events} onRecorded={onDecided} preset={preset} />
         </section>
       )}
