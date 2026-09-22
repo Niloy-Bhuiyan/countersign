@@ -10,10 +10,11 @@ matching, and an approval-gated agent that recommends but never pays.
 
 ## Try it
 
-- **Overview** explains what Countersign is, what every number means, and the four checks
-  in plain language. Every figure has an explanation behind an info button, and a Help
-  panel with a glossary sits in the same place on every page.
-- **Review invoices.** Pick an invoice and read what's wrong in one sentence ("the price is
+- **Home** opens on a live preview of the review screen: click an invoice in it and see
+  what was found and the suggested next step. Below are the four checks, the mistakes you
+  can plant, and the headline accuracy figures. A Help panel with a glossary is on every
+  page, and figures that need explaining have an info button.
+- **Review.** Pick an invoice and read what's wrong in one sentence ("the price is
   about 81% higher than this supplier's usual"), the suggested next step and why, the four
   checks, the invoice against the purchase order, and a chart of the supplier's past prices.
   A short, skippable guide explains the screen on a first visit.
