@@ -7,6 +7,7 @@ import { api, useJson } from "@/components/api";
 import type { CaseDetail } from "@/components/CaseView";
 import { CHECK_ORDER, CHECKS, findingSentence, MISTAKES, NEXT_STEP, REASONS, shortIssue, statusOf } from "@/components/explain";
 import { compact, money } from "@/components/format";
+import { CountUp, PenStroke, useSeen } from "@/components/motion";
 
 type Summary = {
   documents: number;
@@ -80,7 +81,7 @@ function Preview({ rows }: { rows: Row[] }) {
             {row.vendor}
             <span className="end">{statusOf(row).label}</span>
           </div>
-          <div className="thread" aria-live="polite">
+          <div className="thread" aria-live="polite" key={id}>
             <span className="time">Invoice {row.number ?? row.id}</span>
             <div className="bubble">
               <span className="l">Amount billed</span>
@@ -147,6 +148,7 @@ export default function Overview() {
 
   const now = e?.["checks-current"];
   const chosen = MISTAKES.find((m) => m.id === mistake)!;
+  const orb = useSeen<HTMLDivElement>();
 
   return (
     <main className="page" style={{ paddingTop: 0 }}>
@@ -157,7 +159,8 @@ export default function Overview() {
         <h1>
           Check every invoice
           <br />
-          before you <span className="mark" aria-hidden><Check size="0.5em" strokeWidth={3} /></span> pay
+          before you <span className="mark" aria-hidden><Check size="0.5em" strokeWidth={3} /></span>{" "}
+          <span className="signed">pay<PenStroke /></span>
         </h1>
         <p className="lead">
           Countersign compares each supplier bill with what you ordered and received, and tells you what&rsquo;s wrong.
@@ -174,7 +177,7 @@ export default function Overview() {
           <h2>Nothing is paid without a signature</h2>
           <p>Countersign only suggests. A person approves, holds or escalates, and every decision is signed and kept.</p>
         </div>
-        <div className="orb" aria-hidden><Check size={96} strokeWidth={2.5} /></div>
+        <div ref={orb.ref} className={`orb${orb.seen ? " seen" : ""}`} aria-hidden><Check size={96} strokeWidth={2.5} /></div>
       </section>
 
       <section className="section-lg">
@@ -204,13 +207,13 @@ export default function Overview() {
       </section>
 
       <section className="section-lg numbers">
-        <div className="n"><b>{s?.documents ?? "…"}</b><span>invoices checked</span></div>
+        <div className="n"><b>{s ? <CountUp text={String(s.documents)} /> : "…"}</b><span>invoices checked</span></div>
         <div className="n">
-          <b>{now ? `${now.defects.planted - now.defects.reached_cleared}/${now.defects.planted}` : "…"}</b>
+          <b>{now ? <CountUp text={`${now.defects.planted - now.defects.reached_cleared}/${now.defects.planted}`} /> : "…"}</b>
           <span>planted mistakes caught</span>
         </div>
         <div className="n"><b>{now?.clean_invoices.with_a_failed_check ?? "…"}</b><span>false alarms</span></div>
-        <div className="n"><b>{s ? `BDT ${compact(s.atRiskBDT)}` : "…"}</b><span>waiting for a decision</span></div>
+        <div className="n"><b>{s ? <CountUp text={`BDT ${compact(s.atRiskBDT)}`} /> : "…"}</b><span>waiting for a decision</span></div>
       </section>
     </main>
   );
