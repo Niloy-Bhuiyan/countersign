@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Newsreader, Public_Sans } from "next/font/google";
+import { IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import Masthead from "@/components/Masthead";
 import "./globals.css";
 
-const serif = Newsreader({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-newsreader",
-  display: "swap",
-});
-const sans = Public_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-public-sans",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-jakarta",
   display: "swap",
 });
 const mono = IBM_Plex_Mono({
@@ -24,14 +17,14 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Countersign",
+  title: "Countersign — check supplier invoices before you pay",
   description:
-    "Invoice-to-payment reconciliation: documents read, checked against orders and deliveries, and decided by a person. Synthetic data.",
+    "Countersign reads supplier invoices, checks them against purchase orders and deliveries, flags problems in plain language, and waits for a person to approve. Demo with made-up data.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
+    <html lang="en" className={`${jakarta.variable} ${mono.variable}`}>
       <body>
         <Masthead />
         {children}
