@@ -61,3 +61,20 @@ Radius: tiles 24px, inner blocks 16px, inputs and buttons fully rounded.
 - [ ] Touch targets ≥ 44px for primary actions
 - [ ] No horizontal scroll at 375px
 - [ ] `prefers-reduced-motion` respected
+
+## Signature
+
+What makes Countersign recognisable on top of the monochrome base. All of it lives in
+`web/components/motion.tsx` and the "signature" block at the end of `globals.css`.
+
+- **The stamp.** A worn-ink rubber stamp with COUNTERSIGN around the rim. It lands when a decision
+  is signed (APPROVED green, ON HOLD amber, ESCALATED red) and on a lab verdict (CAUGHT or PASSED,
+  in white on the black bar). It is decorative: the same status is always written nearby.
+- **The pen stroke.** A handwritten line that signs "pay" in the headline.
+- **Self-drawing ticks.** The logo, the headline mark and the large circle draw their tick.
+- **Reading and running.** The home preview sweeps a scan line and raises findings in turn; an
+  invoice's four check dots light up one after another.
+- **Counting.** Home figures count up once they are seen.
+
+Every animated element's resting style is its final state, and keyframes only describe the way in,
+so reduced motion shows the finished page. Motion never delays an action or hides information.
