@@ -47,6 +47,8 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.ruff.lint.per-file-ignores]
 # The catalogue is a data table kept one row per item; its rows run long.
 "data/catalogue.py" = ["E501"]
+# The report generator writes markdown tables; their header rows run long.
+"eval/run.py" = ["E501"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
