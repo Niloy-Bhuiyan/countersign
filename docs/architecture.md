@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Built and deployed except the API. Component status is marked per module. |
+| **Status** | Built and deployed, API included. Component status is marked per module. |
 | **Last reviewed** | 2026-09-20 |
 | **Decisions** | [adr/](adr/) |
 
@@ -99,7 +99,10 @@ countersign/                  application core
   checks/                     the four deterministic checks                [built]
   batch.py                    arrival-ordered run through the checks       [built]
   agent/                      read-only tools and bounded graph            [built]
-  api/                        FastAPI routes                               [not built]
+  serialize.py                one case description for export and api      [built]
+  blobstore.py                private blob storage, memory fallback        [built]
+  decisions.py                server-side decision rules                   [built]
+  workspace.py                isolated reviewer workspaces                 [built]
 
 data/                         synthetic corpus generation
   catalogue.py                vendors and item catalogue                   [built]
@@ -113,6 +116,8 @@ data/                         synthetic corpus generation
 eval/                         the evaluation harness                       [built]
 web/                          static Next.js console on Vercel             [built]
 scripts/export_web.py         pipeline output to console data and BI export [built]
+api/index.py                  FastAPI function on Vercel                   [built]
+data/lab.py                   raise an order, render a real supplier PDF   [built]
 migrations/                   alembic                                      [built]
 ```
 
@@ -191,18 +196,22 @@ to one: retrying a deterministic reader returns the same answer.
 
 ```mermaid
 flowchart LR
-    B["make web"] -->|runs the pipeline offline| J["JSON cases, summary,<br/>evaluation, BI export"]
-    J --> S["Static Next.js export"]
-    S --> V["Vercel"]
-    U["Reviewer"] --> V
+    U["Reviewer"] --> V["Vercel"]
+    V --> S["Static console<br/>Next.js export"]
+    V --> F["FastAPI function<br/>countersign package"]
+    F --> SN[("Snapshot<br/>reference data, ledger")]
+    F --> B[("Private Blob store<br/>uploads, lab orders,<br/>decisions: append-only")]
 ```
 
-The console is a static export. The pipeline runs offline and writes its results; the site
-reads them. There is no server to fail, no database to reach and no key to leak, and a
-decision made in the demo is stored in the browser only, which the console states on screen.
+The console is a static export. The API is one Python function that imports the same
+`countersign` package the evaluation measured; `scripts/assemble_deploy.py` bundles it with
+the lab and a snapshot of the reference data and the ledger. Every upload and lab invoice
+goes through `batch.check_case`; every decision goes through `decisions.record`, which
+applies the state machine on the server. Reviewer state lives in a private Blob store
+under a per-workspace prefix ([ADR-007](adr/ADR-007-workspaces-and-append-only-decisions.md)).
 
-The designed production shape, a FastAPI service over PostgreSQL, is what the schema,
-migrations and state machine are built for. It is not deployed.
+The PostgreSQL schema, migrations and state machine in `countersign/db` are the production
+shape for persistence. They are built and migrated, and not what the demo deploys.
 
 ## What this architecture refuses to do
 
