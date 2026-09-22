@@ -23,10 +23,24 @@ API = "https://vercel.com/api/blob"
 API_VERSION = "12"
 
 
+class StorageError(RuntimeError):
+    """The store could not be reached or refused the request."""
+
+
+class BlobExists(StorageError):
+    """A write to a pathname that already holds an object. Objects are never replaced."""
+
+
 class BlobStore(Protocol):
     def put(self, pathname: str, data: bytes, content_type: str) -> None: ...
     def list(self, prefix: str) -> list[str]: ...
     def get(self, pathname: str) -> bytes | None: ...
+
+
+def _checked(response: httpx.Response) -> httpx.Response:
+    if response.is_error:
+        raise StorageError(f"storage refused the request ({response.status_code})")
+    return response
 
 
 class VercelBlob:
@@ -36,20 +50,25 @@ class VercelBlob:
         self._urls: dict[str, str] = {}
 
     def put(self, pathname: str, data: bytes, content_type: str) -> None:
-        response = self._client.put(
-            f"{API}/",
-            params={"pathname": pathname},
-            content=data,
-            headers={
-                **self._auth,
-                "x-api-version": API_VERSION,
-                "x-content-type": content_type,
-                "x-add-random-suffix": "0",
-                "x-vercel-blob-access": "private",
-            },
-        )
-        response.raise_for_status()
-        self._urls[pathname] = response.json()["url"]
+        try:
+            response = self._client.put(
+                f"{API}/",
+                params={"pathname": pathname},
+                content=data,
+                headers={
+                    **self._auth,
+                    "x-api-version": API_VERSION,
+                    "x-content-type": content_type,
+                    "x-add-random-suffix": "0",
+                    "x-allow-overwrite": "0",
+                    "x-vercel-blob-access": "private",
+                },
+            )
+        except httpx.HTTPError as exc:
+            raise StorageError("storage is unreachable") from exc
+        if response.status_code in (400, 409) and "exist" in response.text.lower():
+            raise BlobExists(pathname)
+        self._urls[pathname] = _checked(response).json()["url"]
 
     def list(self, prefix: str) -> list[str]:
         pathnames: list[str] = []
@@ -58,11 +77,13 @@ class VercelBlob:
             params = {"prefix": prefix, "limit": "1000"}
             if cursor:
                 params["cursor"] = cursor
-            response = self._client.get(
-                f"{API}/", params=params, headers={**self._auth, "x-api-version": API_VERSION}
-            )
-            response.raise_for_status()
-            body = response.json()
+            try:
+                response = self._client.get(
+                    f"{API}/", params=params, headers={**self._auth, "x-api-version": API_VERSION}
+                )
+            except httpx.HTTPError as exc:
+                raise StorageError("storage is unreachable") from exc
+            body = _checked(response).json()
             for blob in body["blobs"]:
                 self._urls[blob["pathname"]] = blob["url"]
                 pathnames.append(blob["pathname"])
@@ -77,11 +98,13 @@ class VercelBlob:
             url = self._urls.get(pathname)
         if url is None:
             return None
-        response = self._client.get(url, headers=self._auth)
+        try:
+            response = self._client.get(url, headers=self._auth)
+        except httpx.HTTPError as exc:
+            raise StorageError("storage is unreachable") from exc
         if response.status_code == 404:
             return None
-        response.raise_for_status()
-        return response.content
+        return _checked(response).content
 
 
 class MemoryBlob:
@@ -89,6 +112,9 @@ class MemoryBlob:
         self.objects: dict[str, tuple[bytes, str]] = {}
 
     def put(self, pathname: str, data: bytes, content_type: str) -> None:
+        # Same rule as the Vercel store: an existing object is never replaced.
+        if pathname in self.objects:
+            raise BlobExists(pathname)
         self.objects[pathname] = (data, content_type)
 
     def list(self, prefix: str) -> list[str]:
