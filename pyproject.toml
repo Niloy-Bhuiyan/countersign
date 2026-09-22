@@ -53,3 +53,5 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+# The corpus generator lives in the top-level data package, next to the app.
+pythonpath = ["."]
