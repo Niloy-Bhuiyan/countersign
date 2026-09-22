@@ -29,6 +29,7 @@ from data.records import (
     PERIOD_DAYS,
     PERIOD_END,
     generate_deliveries,
+    generate_order_history,
     generate_purchase_orders,
     generate_vendors,
 )
@@ -60,6 +61,9 @@ def build(seed: int) -> dict:
     deliveries = generate_deliveries(rng, orders)
     invoices = generate_invoices(rng, vendors, orders, deliveries)
     truth = plant(rng, vendors, orders, deliveries, invoices)
+    # A separate stream, so the order history can change without moving a single
+    # invoice, defect or ground-truth row.
+    history = generate_order_history(random.Random(seed + 2), vendors)
 
     return {
         "vendors": vendors,
@@ -67,6 +71,7 @@ def build(seed: int) -> dict:
         "deliveries": deliveries,
         "invoices": invoices,
         "truth": truth,
+        "history": history,
     }
 
 
@@ -81,7 +86,10 @@ def main(seed: int, *, with_documents: bool = True) -> None:
     )
 
     _write(CORPUS_DIR / "vendors.json", [asdict(v) for v in corpus["vendors"]])
-    _write(CORPUS_DIR / "purchase_orders.json", [asdict(o) for o in corpus["orders"]])
+    _write(
+        CORPUS_DIR / "purchase_orders.json",
+        [asdict(o) for o in corpus["history"] + corpus["orders"]],
+    )
     _write(CORPUS_DIR / "deliveries.json", [asdict(d) for d in corpus["deliveries"]])
     _write(CORPUS_DIR / "invoices.json", [asdict(i) for i in corpus["invoices"]])
 
@@ -100,6 +108,7 @@ def main(seed: int, *, with_documents: bool = True) -> None:
             "counts": {
                 "vendors": len(corpus["vendors"]),
                 "purchase_orders": len(corpus["orders"]),
+                "historical_orders": len(corpus["history"]),
                 "deliveries": len(corpus["deliveries"]),
                 "invoices": len(corpus["invoices"]),
                 "defects": len(corpus["truth"]),

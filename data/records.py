@@ -34,6 +34,13 @@ PERIOD_DAYS = 425
 N_VENDORS = 40
 N_PURCHASE_ORDERS = 460
 
+#: Closed orders from the year before the period. A real order book goes back
+#: years before any window being audited; without it, an invoice early in the
+#: period has no earlier price to be judged against and the variance check can
+#: only abstain. These orders are reference data only: no invoice bills them.
+HISTORY_ORDERS_PER_VENDOR = 12
+HISTORY_DAYS = 365
+
 
 @dataclass
 class Line:
@@ -259,3 +266,49 @@ def generate_deliveries(rng: random.Random, orders: list[PurchaseOrder]) -> list
             )
 
     return deliveries
+
+
+def generate_order_history(rng: random.Random, vendors: list[Vendor]) -> list[PurchaseOrder]:
+    """Closed purchase orders from the year before the period, for price history."""
+    by_sku = {item.sku: item for item in CATALOGUE}
+    period_start = PERIOD_END - timedelta(days=PERIOD_DAYS)
+    orders: list[PurchaseOrder] = []
+
+    for vendor in vendors:
+        for _ in range(HISTORY_ORDERS_PER_VENDOR):
+            ordered_at = period_start - timedelta(days=rng.randrange(1, HISTORY_DAYS))
+            chosen = rng.sample(vendor.skus, k=min(len(vendor.skus), rng.randint(1, 3)))
+            lines = []
+            for line_no, sku in enumerate(chosen, start=1):
+                item = by_sku[sku]
+                quantity = _quantity_for(rng, item)
+                unit_price = _price_for(rng, item, vendor, ordered_at)
+                lines.append(
+                    Line(
+                        line_no=line_no,
+                        sku=item.sku,
+                        description=item.description,
+                        uom=item.uom,
+                        quantity=quantity,
+                        unit_price=unit_price,
+                        line_total=compute_line_total(quantity, unit_price),
+                        tax_rate=item.tax_rate,
+                    )
+                )
+            subtotal, tax_total, total = _totals(lines)
+            n = len(orders) + 1
+            orders.append(
+                PurchaseOrder(
+                    id=f"PO-H{n:04d}",
+                    po_number=f"PO/{ordered_at.year}/H{n:04d}",
+                    vendor_id=vendor.id,
+                    ordered_at=ordered_at,
+                    currency=vendor.currency,
+                    subtotal=subtotal,
+                    tax_total=tax_total,
+                    total=total,
+                    status="closed",
+                    lines=lines,
+                )
+            )
+    return orders
