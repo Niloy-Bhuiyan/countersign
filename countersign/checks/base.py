@@ -86,6 +86,45 @@ class Ledger:
         key = (po_id, line_no)
         self.billed[key] = self.billed.get(key, Decimal(0)) + quantity
 
+    def to_dict(self) -> dict:
+        """A snapshot the live API loads, so an upload is checked against history."""
+        return {
+            "seen": [
+                {
+                    "document_id": s.document_id,
+                    "sha256": s.sha256,
+                    "vendor_id": s.vendor_id,
+                    "po_id": s.po_id,
+                    "invoice_number": s.invoice_number,
+                    "issued_at": s.issued_at.isoformat(),
+                    "total": str(s.total),
+                }
+                for s in self.seen
+            ],
+            "billed": [
+                {"po_id": po_id, "line_no": line_no, "quantity": str(quantity)}
+                for (po_id, line_no), quantity in self.billed.items()
+            ],
+        }
+
+    @classmethod
+    def from_dict(cls, payload: dict) -> Ledger:
+        return cls(
+            seen=[
+                SeenInvoice(
+                    document_id=s["document_id"],
+                    sha256=s["sha256"],
+                    vendor_id=s["vendor_id"],
+                    po_id=s["po_id"],
+                    invoice_number=s["invoice_number"],
+                    issued_at=date.fromisoformat(s["issued_at"]),
+                    total=Decimal(s["total"]),
+                )
+                for s in payload["seen"]
+            ],
+            billed={(b["po_id"], b["line_no"]): Decimal(b["quantity"]) for b in payload["billed"]},
+        )
+
 
 def normalise_number(invoice_number: str) -> str:
     """``INV-001`` and ``inv 001`` are the same invoice number."""
