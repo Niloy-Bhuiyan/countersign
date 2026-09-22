@@ -3,7 +3,7 @@
 VENV ?= .venv/Scripts
 PY   := $(VENV)/python.exe
 
-.PHONY: install corpus test lint fmt migrate check
+.PHONY: install corpus test lint fmt migrate check eval web
 
 install:
 	python -m venv .venv
@@ -30,3 +30,12 @@ migrate:
 
 check: lint test migrate
 	$(VENV)/alembic.exe check
+
+## Measure everything against the ground truth; rewrites eval/results and eval/report.md.
+eval:
+	$(PY) -m eval.run
+
+## Export console data and build the static site into web/out.
+web:
+	$(PY) -m scripts.export_web
+	cd web && npm ci && npm run build
