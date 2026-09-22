@@ -1,13 +1,13 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Inbox, Lightbulb, Search, X } from "lucide-react";
+import { Inbox, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, useDecisions, useJson, useWorkspace } from "@/components/api";
 import CaseView, { type CaseDetail } from "@/components/CaseView";
 import { shortIssue, shortLabel, statusOf } from "@/components/explain";
-import { compareDecimal, date, money } from "@/components/format";
-import { Empty, StatusPill } from "@/components/ui";
+import { compareDecimal, money } from "@/components/format";
+import { Empty } from "@/components/ui";
 
 type Row = {
   id: string;
@@ -30,26 +30,17 @@ type Row = {
 type View = "attention" | "ready" | "decided" | "mine" | "all";
 
 const VIEWS: { key: View; label: string; help: string }[] = [
-  { key: "attention", label: "Needs a look", help: "Something is wrong or unclear. Biggest amounts first." },
-  { key: "ready", label: "Ready to pay", help: "Passed all four checks. Each still needs a person to approve it." },
+  { key: "attention", label: "To check", help: "Something is wrong or unclear. Biggest amounts first." },
+  { key: "ready", label: "Ready", help: "Passed all four checks. Each still needs a person to approve it." },
   { key: "decided", label: "Decided", help: "Invoices you've approved, held or escalated in this workspace." },
-  { key: "mine", label: "My tests", help: "Invoices you created or uploaded on the “Try it yourself” page." },
+  { key: "mine", label: "My tests", help: "Invoices you created or uploaded on the Try it page." },
   { key: "all", label: "All", help: "Every invoice in the demo." },
 ];
 
 const TOUR = [
-  {
-    title: "Welcome! This is where invoices get checked.",
-    text: "On the left is the list of supplier invoices. Pick one to see what's wrong with it, in plain words, on the right.",
-  },
-  {
-    title: "Red means a problem, amber means unsure, green means fine.",
-    text: "Each invoice shows its most important issue. The “Needs a look” tab puts the biggest amounts first.",
-  },
-  {
-    title: "Then decide: approve, hold or escalate.",
-    text: "Scroll to “Your decision” under any invoice. Your decisions are saved and listed on the Decision history page.",
-  },
+  "Pick an invoice. What's wrong with it is shown in plain words.",
+  "Red dot: a problem. Amber: unsure. Green: fine.",
+  "Scroll down to approve, hold or escalate. Every decision is signed and kept.",
 ];
 
 const TOUR_KEY = "countersign.tour.review";
@@ -72,29 +63,23 @@ function Tour() {
     setStep(null);
   };
   if (step === null) return null;
-  const s = TOUR[step];
   return (
-    <section className="card tour" aria-label="Quick guide">
-      <span className="ic"><Lightbulb size={22} aria-hidden /></span>
-      <div>
-        <div style={{ display: "flex", alignItems: "start", gap: 8 }}>
-          <h3>{s.title}</h3>
-          <button className="btn btn-ghost btn-sm" style={{ marginLeft: "auto", minHeight: 28, padding: "0 6px" }} onClick={done} aria-label="Close the guide">
-            <X size={16} aria-hidden />
-          </button>
-        </div>
-        <p>{s.text}</p>
-        <div className="row">
-          <span className="dots" aria-hidden>{TOUR.map((_, i) => <i key={i} className={i === step ? "on" : ""} />)}</span>
-          <button className="btn btn-ghost btn-sm" onClick={done}>Skip</button>
-          {step > 0 && <button className="btn btn-sm" onClick={() => setStep(step - 1)}><ChevronLeft size={15} aria-hidden /> Back</button>}
-          {step < TOUR.length - 1
-            ? <button className="btn btn-primary btn-sm" onClick={() => setStep(step + 1)}>Next <ChevronRight size={15} aria-hidden /></button>
-            : <button className="btn btn-primary btn-sm" onClick={done}>Got it</button>}
-        </div>
+    <section className="tour" aria-label="Quick guide">
+      <p>{TOUR[step]}</p>
+      <div className="row">
+        <span className="dots" aria-hidden>{TOUR.map((_, i) => <i key={i} className={i === step ? "on" : ""} />)}</span>
+        <button className="btn btn-sm" onClick={done}>Skip</button>
+        {step < TOUR.length - 1
+          ? <button className="btn btn-primary btn-sm" onClick={() => setStep(step + 1)}>Next</button>
+          : <button className="btn btn-primary btn-sm" onClick={done}>Got it</button>}
       </div>
     </section>
   );
+}
+
+/** Once decided, the list says what was decided; before that, the main problem. */
+function decisionWord(label: string, issue: string): string {
+  return ["Approved", "On hold", "Escalated"].includes(label) ? `${label} · ${issue}` : issue;
 }
 
 function Review() {
@@ -214,33 +199,28 @@ function Review() {
 
   const events = (decisions?.log ?? []).filter((e) => e.invoice_id === selectedId);
   const docUrl = detail ? (isMine && ws ? `/api/workspaces/${ws}/files/${detail.file}` : `/documents/${detail.file}`) : "";
-  const activeView = VIEWS.find((v) => v.key === view)!;
 
   return (
     <div className="review">
       <aside className="card list-card" aria-label="Invoices">
         <div className="list-head">
-          <div>
-            <h1 style={{ fontSize: 18, fontWeight: 700 }}>Supplier invoices</h1>
-            <p className="xs muted" style={{ marginTop: 2 }}>Choose an invoice to see what&rsquo;s wrong and decide.</p>
-          </div>
+          <h1>Invoices</h1>
           <div className="tabs" role="group" aria-label="Show">
             {VIEWS.map((v) => (
-              <button key={v.key} className="tab" aria-pressed={view === v.key} onClick={() => setView(v.key)}>
+              <button key={v.key} className="tab" aria-pressed={view === v.key} onClick={() => setView(v.key)} title={v.help}>
                 {v.label} <span className="count">{counts[v.key]}</span>
               </button>
             ))}
           </div>
-          <p className="tab-help">{activeView.help}</p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <label className="search">
               <span className="sr-only">Search invoices</span>
               <Search size={16} aria-hidden />
-              <input ref={search} className="input" type="search" placeholder="Search supplier or invoice"
+              <input ref={search} className="input" type="search" placeholder="Search"
                 value={query} onChange={(e) => setQuery(e.target.value)} />
             </label>
             <select className="select" aria-label="Filter by issue" value={issue} onChange={(e) => setIssue(e.target.value)} style={{ flex: "1 1 150px" }}>
-              <option value="">Any issue</option>
+              <option value="">Any problem</option>
               {issues.map((k) => <option key={k} value={k}>{shortLabel(k)}</option>)}
             </select>
           </div>
@@ -250,15 +230,12 @@ function Review() {
             const status = statusOf(r, current[r.id]?.decision);
             return (
               <button key={r.id} className="item" aria-current={r.id === selectedId} onClick={() => select(r.id)}>
+                <span className={`dot dot-${status.tone}`} aria-hidden />
                 <span className="who">{r.vendor ?? "Unreadable document"}</span>
-                <span className="amt">{r.total ? `${r.currency} ${money(r.total)}` : "—"}</span>
-                <span className="ref">
-                  <span className="mono">{r.number ?? r.id}</span> · {date(r.issued)}
-                </span>
-                <span />
+                <span className="amt">{r.total ? money(r.total) : "—"}</span>
                 <span className="issue">
-                  <span className="txt">{shortIssue(r.failed, r.abstained, r.reason)}</span>
-                  <StatusPill status={status} />
+                  <span className="sr-only">{status.label}: </span>
+                  {decisionWord(status.label, shortIssue(r.failed, r.abstained, r.reason))}
                 </span>
               </button>
             );
@@ -279,7 +256,7 @@ function Review() {
           {!corpus && !error && <p className="small muted" style={{ padding: 16 }}>Loading invoices…</p>}
         </div>
         <div className="list-foot">
-          <span><kbd>j</kbd> <kbd>k</kbd> next / previous</span>
+          <span><kbd>j</kbd> <kbd>k</kbd> move</span>
           <span><kbd>/</kbd> search</span>
           <span><kbd>a</kbd> <kbd>h</kbd> <kbd>e</kbd> decide</span>
         </div>
