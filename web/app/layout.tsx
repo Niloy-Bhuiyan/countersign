@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
-import Nav from "@/components/Nav";
+import { IBM_Plex_Mono, Newsreader, Public_Sans } from "next/font/google";
+import Masthead from "@/components/Masthead";
 import "./globals.css";
 
-const sans = IBM_Plex_Sans({
+const serif = Newsreader({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
-  variable: "--font-plex-sans",
+  style: ["normal", "italic"],
+  variable: "--font-newsreader",
+  display: "swap",
+});
+const sans = Public_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-public-sans",
   display: "swap",
 });
 const mono = IBM_Plex_Mono({
@@ -17,19 +24,17 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Countersign — invoice reconciliation console",
+  title: "Countersign",
   description:
-    "Invoice-to-payment reconciliation with document extraction, deterministic three-way matching, and an approval-gated agent that recommends but never pays. Synthetic data.",
+    "Invoice-to-payment reconciliation: documents read, checked against orders and deliveries, and decided by a person. Synthetic data.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+    <html lang="en" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
       <body>
-        <div className="shell">
-          <Nav />
-          <main>{children}</main>
-        </div>
+        <Masthead />
+        {children}
       </body>
     </html>
   );
