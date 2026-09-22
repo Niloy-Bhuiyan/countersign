@@ -10,17 +10,22 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import io
+import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import pdfplumber
 from openpyxl import load_workbook
-from pdfplumber.utils.exceptions import PdfminerException
 
 READABLE = "readable"
 UNREADABLE = "quarantined_unreadable"
 ENCRYPTED = "quarantined_encrypted"
 IMAGE_ONLY = "quarantined_image_only"
+
+#: A spreadsheet that inflates past this when unzipped is treated as unreadable,
+#: so a 4 MB upload cannot expand into gigabytes in memory.
+MAX_UNZIPPED = 64 * 1024 * 1024
 
 
 @dataclass
@@ -49,20 +54,30 @@ def read(path: Path) -> Intake:
     suffix = path.suffix.lower()
 
     if suffix == ".csv":
-        with path.open(newline="", encoding="utf-8") as handle:
-            rows = [_cells(row) for row in csv.reader(handle)]
+        # Accounting systems still export Windows-1252; UTF-8 first, then that.
+        try:
+            text = data.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            text = data.decode("cp1252", errors="replace")
+        try:
+            rows = [_cells(row) for row in csv.reader(io.StringIO(text, newline=""))]
+        except csv.Error:
+            return Intake(path, digest, "text/csv", UNREADABLE)
         return Intake(path, digest, "text/csv", READABLE, rows=rows)
 
     if suffix == ".xlsx":
-        sheet = load_workbook(path, read_only=True, data_only=True).active
-        rows = [_cells(row) for row in sheet.iter_rows(values_only=True)]
-        return Intake(
-            path,
-            digest,
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            READABLE,
-            rows=rows,
-        )
+        media = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        # Parsers of untrusted files fail in many ways; each one means "a person
+        # opens this", never a crashed request.
+        try:
+            with zipfile.ZipFile(path) as archive:
+                if sum(info.file_size for info in archive.infolist()) > MAX_UNZIPPED:
+                    return Intake(path, digest, media, UNREADABLE)
+            sheet = load_workbook(path, read_only=True, data_only=True).active
+            rows = [_cells(row) for row in sheet.iter_rows(values_only=True)]
+        except Exception:  # noqa: BLE001
+            return Intake(path, digest, media, UNREADABLE)
+        return Intake(path, digest, media, READABLE, rows=rows)
 
     # PDF. An encrypted file announces itself in the trailer before any parser
     # runs, which lets it be told apart from one that is merely broken.
@@ -71,7 +86,7 @@ def read(path: Path) -> Intake:
     try:
         with pdfplumber.open(path) as pdf:
             pages = [page.extract_text() or "" for page in pdf.pages]
-    except PdfminerException:
+    except Exception:  # noqa: BLE001 - any parser failure on an untrusted file
         return Intake(path, digest, "application/pdf", UNREADABLE)
 
     if not any(page.strip() for page in pages):
