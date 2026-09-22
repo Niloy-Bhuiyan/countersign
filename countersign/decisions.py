@@ -21,6 +21,7 @@ from countersign import states
 DECISIONS = (states.APPROVED, states.HELD, states.ESCALATED)
 WITHDRAWN = "withdrawn"
 MIN_NOTE = 10
+MAX_NOTE = 1000
 
 
 class DecisionError(ValueError):
@@ -62,6 +63,8 @@ def record(
 
     if len(reviewer) < 2 or len(reviewer) > 80:
         raise DecisionError("name the reviewer recording this decision")
+    if len(note) > MAX_NOTE:
+        raise DecisionError(f"keep the note under {MAX_NOTE} characters")
 
     if decision == WITHDRAWN:
         if state not in DECISIONS:
