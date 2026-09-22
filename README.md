@@ -1,64 +1,93 @@
-# Countersign
+<div align="center">
+
+<a href="https://countersign-zeta.vercel.app"><img src="docs/assets/hero.svg" alt="Countersign checks an invoice: one problem found, put on hold" width="100%"></a>
+
+<br>
+
+[![checks](https://github.com/Niloy-Bhuiyan/countersign/actions/workflows/ci.yml/badge.svg)](https://github.com/Niloy-Bhuiyan/countersign/actions/workflows/ci.yml)
+[![live](https://img.shields.io/badge/live-countersign--zeta.vercel.app-0a0a0a?style=flat-square)](https://countersign-zeta.vercel.app)
+![tests](https://img.shields.io/badge/tests-170_passing-0a0a0a?style=flat-square)
+![python](https://img.shields.io/badge/python-3.12-0a0a0a?style=flat-square&logo=python&logoColor=white)
+![fastapi](https://img.shields.io/badge/FastAPI-0a0a0a?style=flat-square&logo=fastapi&logoColor=white)
+![next.js](https://img.shields.io/badge/Next.js_15-0a0a0a?style=flat-square&logo=nextdotjs&logoColor=white)
+[![license](https://img.shields.io/badge/license-MIT-0a0a0a?style=flat-square)](LICENSE)
+
+**[Open the live demo](https://countersign-zeta.vercel.app)** &nbsp;·&nbsp;
+[Try it yourself](https://countersign-zeta.vercel.app/lab/) &nbsp;·&nbsp;
+[API reference](https://countersign-zeta.vercel.app/api/docs) &nbsp;·&nbsp;
+[Evaluation report](eval/report.md)
+
+</div>
+
+<br>
 
 Invoice-to-payment reconciliation with document extraction, deterministic three-way
 matching, and an approval-gated agent that recommends but never pays.
 
-**Live console: [countersign-zeta.vercel.app](https://countersign-zeta.vercel.app)** ·
-[Try it yourself](https://countersign-zeta.vercel.app/lab/) ·
-[API reference](https://countersign-zeta.vercel.app/api/docs) ·
-[Evaluation report](eval/report.md)
+> [!NOTE]
+> **All data here is synthetic.** Vendors, orders, deliveries and 500 invoice documents come
+> from a seeded generator and are reproducible byte for byte. No real company is involved,
+> and results on this corpus are an upper bound ([dataset card](docs/dataset-card.md)).
 
-## Try it
+<br>
 
-- **Home** opens on a live preview of the review screen: click an invoice in it and see
-  what was found and the suggested next step. Below are the four checks, the mistakes you
-  can plant, and the headline accuracy figures. A Help panel with a glossary is on every
-  page, and figures that need explaining have an info button.
-- **Review.** Pick an invoice and read what's wrong in one sentence ("the price is
-  about 81% higher than this supplier's usual"), the suggested next step and why, the four
-  checks, the invoice against the purchase order, and a chart of the supplier's past prices.
-  A short, skippable guide explains the screen on a first visit.
-- **Decide.** Approve, hold or escalate. The decision is recorded on the server, checked by
-  the same state machine as the pipeline, and kept in a decision history you can export.
-  Choosing differently from the suggestion requires a written reason; the server refuses it
-  otherwise.
-- **Try it yourself.** Pick a supplier and a mistake to plant: overbill, overcharge, wrong
-  VAT, an inflated order, wrong currency, or a resubmitted invoice. The server creates a
-  real PDF and reads it back through the pipeline, then tells you whether it caught the
-  mistake. You can also upload your own PDF, XLSX or CSV.
+<div align="center">
+<img src="docs/assets/preview.gif" alt="Clicking through invoices on the live home page: each shows what was found and the suggested next step" width="88%">
+<br>
+<sub>The home page of the live demo. Click any invoice to see what was found and what to do next.</sub>
+</div>
 
-Everything you do lives in your own workspace, carried in the URL, so it can be shared and
-nobody else's clicks change yours.
+<br>
 
----
+## In 20 seconds
 
-## All data in this project is synthetic
+<table>
+<tr>
+<td width="33%" valign="top">
 
-There is no real vendor data and no real company data here. Vendors, purchase orders,
-deliveries and 500 invoice documents are produced by a seeded generator in
-[`data/generate.py`](data/generate.py), reproducible byte for byte from a clone. Vendor
-names are assembled from generic word lists; the buyer is fictional. This system has not
-been deployed at or for any organisation. Results on this corpus are an upper bound, not a
-prediction of performance on real invoices ([dataset card](docs/dataset-card.md)).
+**1 · It reads the bill**
 
----
+A supplier sends a PDF, spreadsheet or CSV. Countersign copies every field as printed, then
+checks that the lines add up before it trusts a single number.
 
-## The problem
+</td>
+<td width="33%" valign="top">
 
-A manufacturing group receives supplier invoices as PDFs and spreadsheets, from dozens of
-vendors, in formats that agree on nothing. Someone types each one in. Someone else checks it
-against the purchase order and the delivery record, checks the price against what the vendor
-usually charges, checks the VAT arithmetic, and checks it has not been paid already. The work
-is slow, and the checks skipped when the queue is long are the ones that cost money.
+**2 · It checks it**
 
-Countersign reads the document, turns it into a typed record, runs the checks a controller
-would run, routes anything doubtful to a person, and drafts a recommended action with every
-claim linked to the record behind it. A person makes the decision.
+Against what was ordered and what arrived, the supplier's past prices, earlier invoices,
+and the VAT arithmetic. Four fixed rules, no guessing.
 
-## Measured results
+</td>
+<td width="33%" valign="top">
+
+**3 · A person signs**
+
+It says what's wrong in one sentence and suggests a next step with its sources. Only a
+person approves, holds or escalates. There is no code path that pays.
+
+</td>
+</tr>
+</table>
+
+## How it works
+
+<img src="docs/assets/pipeline.svg" alt="Pipeline: arrives, read, validate, four checks, suggest, a person signs" width="100%">
+
+| Check | The question it answers | How |
+|---|---|---|
+| **Matches the order and delivery** | Did we order this, did it arrive, is it the agreed price? | Exact three-way match with stated tolerances |
+| **Price is normal for this supplier** | Is this price unusually high for them? | Median and MAD over their history, plus a 10% materiality floor |
+| **Not a duplicate** | Have we seen this invoice before? | Content hash, per-vendor number, same order and amount |
+| **VAT adds up** | Is the tax right? | Exact recomputation in `Decimal`, rates from the order when unprinted |
+
+## Measured, not claimed
+
+<img src="docs/assets/metrics.svg" alt="89 of 90 planted mistakes caught, 0.0% false alarms, 71.8% passed automatically, misread invoices stored went from 9 to 0" width="100%">
 
 From `python -m eval.run` over 500 documents, 90 of them carrying a planted defect. Every
-figure comes from the committed files in [`eval/results/`](eval/results/).
+figure comes from the committed files in [`eval/results/`](eval/results/), and the drawing
+above is generated from them by [`scripts/readme_art.py`](scripts/readme_art.py).
 
 | | |
 |---|---|
@@ -77,7 +106,9 @@ evaluated yet, and no number here claims it has.
 **Manual baseline: not yet measured.** No time-saving claim is made until it is
 ([eval/manual_baseline.md](eval/manual_baseline.md)).
 
-## What did not work, and what changed
+<details>
+<summary><b>What did not work, and what changed</b></summary>
+<br>
 
 Each of these came out of an evaluation run, and the run that exposed it is kept.
 
@@ -101,6 +132,44 @@ Each of these came out of an evaluation run, and the run that exposed it is kept
   copy looked exactly like the missing second half of a split delivery. It is reported, not
   tuned away. `cleared` is not paid, and the next change is to re-run duplicate detection
   over cleared invoices whenever a quarantined document is resolved.
+
+</details>
+
+## Try it yourself
+
+<div align="center">
+<img src="docs/assets/lab.gif" alt="Choosing a mistake in the lab, creating the invoice, and getting the verdict: caught" width="88%">
+<br>
+<sub>Plant a mistake, and the server writes a real PDF, reads it back through the pipeline and reports whether it was caught.</sub>
+</div>
+
+<br>
+
+- **[Review](https://countersign-zeta.vercel.app/review/).** Pick an invoice and read what's
+  wrong in one sentence ("the price is about 81% higher than this supplier's usual"), the
+  suggested next step and why, the four checks, the invoice against the purchase order, and
+  a chart of the supplier's past prices.
+- **Decide.** Approve, hold or escalate. The decision is recorded on the server, checked by
+  the same state machine as the pipeline, and kept in a decision history you can export as
+  CSV. Choosing differently from the suggestion requires a written reason; the server
+  refuses it otherwise.
+- **[Try it](https://countersign-zeta.vercel.app/lab/).** Overbill, overcharge, wrong VAT, an
+  inflated order, wrong currency, or a resubmitted invoice. Or upload your own PDF, XLSX
+  or CSV.
+
+Everything you do lives in your own workspace, carried in the URL, so it can be shared and
+nobody else's clicks change yours.
+
+<table>
+<tr>
+<td width="72%"><img src="docs/assets/review.png" alt="The review screen: invoice list on the left, one problem found and the suggested next step on the right"></td>
+<td width="28%"><img src="docs/assets/mobile.png" alt="The review screen on a phone"></td>
+</tr>
+<tr>
+<td align="center"><sub>Review: the problem in one sentence, the next step in black</sub></td>
+<td align="center"><sub>Works on a phone</sub></td>
+</tr>
+</table>
 
 ## Where the language model is used, and where it is not
 
@@ -141,6 +210,14 @@ package the evaluation measured. Uploads, lab orders and decisions persist in a 
 Vercel Blob store, append-only, one workspace per reviewer
 ([ADR-007](docs/adr/ADR-007-workspaces-and-append-only-decisions.md)).
 
+| Layer | Built with |
+|---|---|
+| Pipeline and checks | Python 3.12, Pydantic v2, `Decimal`, pdfplumber, openpyxl |
+| API | FastAPI on Vercel Python functions, private Vercel Blob storage |
+| Data model | SQLAlchemy 2.0 async, Alembic migrations (built, not deployed) |
+| Console | Next.js 15 static export, React 19, plain CSS ([design system](design-system/countersign/MASTER.md)) |
+| Quality | pytest (170 tests), ruff, GitHub Actions |
+
 ## Running it
 
 ```bash
@@ -154,7 +231,8 @@ make deploy         # assemble deploy/ and ship it to Vercel
 ```
 
 Nothing needs an API key or a network connection: without a Blob token the API keeps
-workspaces in memory.
+workspaces in memory. The README art is rebuilt with `python -m scripts.readme_art`, and
+the screenshots with `python -m scripts.readme_media` (needs `pip install playwright`).
 
 ## Documentation
 
@@ -182,6 +260,24 @@ workspaces in memory.
 - No rate limiting on the public API.
 - Single currency pair. Currency mismatch is detected, not converted.
 
-## Contact
+## The problem it answers
 
-Nurul Azam Bhuiyan · niloybhuiyann@gmail.com · [github.com/Niloy-Bhuiyan](https://github.com/Niloy-Bhuiyan)
+A manufacturing group receives supplier invoices as PDFs and spreadsheets, from dozens of
+vendors, in formats that agree on nothing. Someone types each one in. Someone else checks it
+against the purchase order and the delivery record, checks the price against what the vendor
+usually charges, checks the VAT arithmetic, and checks it has not been paid already. The work
+is slow, and the checks skipped when the queue is long are the ones that cost money.
+
+Countersign reads the document, turns it into a typed record, runs the checks a controller
+would run, routes anything doubtful to a person, and drafts a recommended action with every
+claim linked to the record behind it. A person makes the decision.
+
+<br>
+
+<div align="center">
+
+**Nurul Azam Bhuiyan** · [niloybhuiyann@gmail.com](mailto:niloybhuiyann@gmail.com) · [github.com/Niloy-Bhuiyan](https://github.com/Niloy-Bhuiyan)
+
+<sub>MIT licensed · synthetic data only · nothing here is ever paid</sub>
+
+</div>
