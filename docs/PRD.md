@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | In development |
+| **Status** | Built and deployed; evaluated on a synthetic corpus |
 | **Owner** | Nurul Azam Bhuiyan |
 | **Last reviewed** | 2026-09-20 |
 | **Related** | [architecture.md](architecture.md) · [checks.md](checks.md) · [evaluation.md](evaluation.md) · [adr/](adr/) |
@@ -79,21 +79,21 @@ queue is long, and they are the ones that cost money when skipped.
 
 | ID | Requirement | Status |
 |---|---|---|
-| R2.1 | Extract to a typed schema, not free text | Planned |
-| R2.2 | Validate arithmetic before persisting anything | Planned |
-| R2.3 | One bounded retry on validator failure, feeding the failure back | Planned |
+| R2.1 | Extract to a typed schema, not free text | Built: typed schema with no decision fields |
+| R2.2 | Validate arithmetic before persisting anything | Built, measured: 9 wrong records to 0 |
+| R2.3 | One bounded retry on validator failure, feeding the failure back | Not built: the offline reader is deterministic, so a retry changes nothing |
 | R2.4 | Record provider, model and prompt version on every extraction | Built (schema) |
-| R2.5 | Run end to end with no API keys, via an offline provider | Planned |
+| R2.5 | Run end to end with no API keys, via an offline provider | Built: the offline reader is the default |
 
 ### 5.3 Checks
 
 | ID | Requirement | Status |
 |---|---|---|
-| R3.1 | Three-way match: invoice ↔ purchase order ↔ delivery | Planned |
-| R3.2 | Price variance against the vendor's own history, robust to outliers | Planned |
-| R3.3 | Duplicate and near-duplicate detection | Planned |
-| R3.4 | Exact tax arithmetic in decimal | Planned |
-| R3.5 | Every result carries observed, expected, tolerance and the records consulted | Built (schema) |
+| R3.1 | Three-way match: invoice ↔ purchase order ↔ delivery | Built, tested, measured |
+| R3.2 | Price variance against the vendor's own history, robust to outliers | Built, tested, measured |
+| R3.3 | Duplicate and near-duplicate detection | Built, tested, measured |
+| R3.4 | Exact tax arithmetic in decimal | Built, tested, measured |
+| R3.5 | Every result carries observed, expected, tolerance and the records consulted | Built |
 | R3.6 | A check may abstain; abstention routes to review, never to cleared | Built ([states.py](../countersign/states.py)) |
 
 ### 5.4 Decision and control
@@ -102,32 +102,31 @@ queue is long, and they are the ones that cost money when skipped.
 |---|---|---|
 | R4.1 | An invoice reaches `cleared` only when every check passed | Built, tested |
 | R4.2 | No decision state is reachable without a stored human approval | Built, tested |
-| R4.3 | The agent holds read-only tools; no write tool exists | Planned, test planned |
-| R4.4 | Every claim in a recommendation cites a record that exists | Planned |
+| R4.3 | The agent holds read-only tools; no write tool exists | Built, tested |
+| R4.4 | Every claim in a recommendation cites a record that exists | Built, tested |
 | R4.5 | Money is exact decimal end to end | Built, tested |
 
 ### 5.5 Reporting
 
 | ID | Requirement | Status |
 |---|---|---|
-| R5.1 | Review queue as the primary screen | Planned |
-| R5.2 | Management view: spend, exception rate, value at risk, awaiting decision | Planned |
-| R5.3 | Flat CSV/XLSX export shaped for a BI tool | Planned |
-| R5.4 | Synthetic-data marker on every screen | Planned |
+| R5.1 | Review queue as the primary screen | Built, live |
+| R5.2 | Management view: spend, exception rate, value at risk, awaiting decision | Built, live |
+| R5.3 | Flat CSV/XLSX export shaped for a BI tool | Built, live |
+| R5.4 | Synthetic-data marker on every screen | Built, live |
 
 ## 6. Success measures
 
-These are measured by [`make eval`](evaluation.md) from committed result files. **No target
-below has been met yet; none has been measured yet.** They are stated in advance so that
-tuning toward them afterwards is visible.
+These were committed before the first measurement, so that tuning toward them afterwards
+would be visible in the history. Results are from [`eval/report.md`](../eval/report.md).
 
-| Measure | Target | Why this number |
-|---|---|---|
-| Per-field extraction accuracy | ≥ 0.95 on header fields | Below this a reviewer re-reads every field and the typing is not removed |
-| Planted defects reaching `cleared` | **0** | A missed defect is money out; this is the only zero-tolerance measure |
-| False-positive rate on clean invoices | ≤ 0.05 | Above this the queue fills with noise and reviewers start rubber-stamping |
-| Documents auto-cleared | ≥ 0.60 | Below this the system has not removed enough work to be worth operating |
-| Prompt v1 → v2 improvement | Reported, not targeted | A target here invites tuning the number rather than the extractor |
+| Measure | Target | Result | Why this number |
+|---|---|---|---|
+| Per-field extraction accuracy | ≥ 0.95 on header fields | **Met**: 1.00 on every header field, offline reader only | Below this a reviewer re-reads every field and the typing is not removed |
+| Planted defects reaching `cleared` | **0** | **Missed**: 1 of 90; an image-only original hid a near-duplicate | A missed defect is money out; this is the only zero-tolerance measure |
+| False-positive rate on clean invoices | ≤ 0.05 | **Met**: 0.00 (0.148 before the materiality floor) | Above this the queue fills with noise and reviewers start rubber-stamping |
+| Documents auto-cleared | ≥ 0.60 | **Met**: 0.718 | Below this the system has not removed enough work to be worth operating |
+| Reader alone → reader with validators | Reported, not targeted | 9 wrong records persisted → 0 | A target here invites tuning the number rather than the extractor |
 
 ## 7. Risks
 
@@ -152,9 +151,9 @@ tuning toward them afterwards is visible.
 | | Scope | Status |
 |---|---|---|
 | **M1** | Schema, state machine, money, synthetic corpus, ground truth | Done |
-| **M2** | Ingestion, extraction, validators, offline provider | In progress |
-| **M3** | The four checks, each with its own tests | Next |
-| **M4** | Agent, citation verification, approval flow | |
-| **M5** | Evaluation harness and first measured results | |
-| **M6** | API, review queue, dashboard, export | |
-| **M7** | Docs, deployment, manual baseline | |
+| **M2** | Ingestion, extraction, validators, offline provider | Done |
+| **M3** | The four checks, each with its own tests | Done |
+| **M4** | Agent, citation verification, approval flow | Done; approval is browser-local in the demo |
+| **M5** | Evaluation harness and first measured results | Done |
+| **M6** | API, review queue, dashboard, export | Console and export done; API not built |
+| **M7** | Docs, deployment, manual baseline | Docs and deployment done; baseline not run |
