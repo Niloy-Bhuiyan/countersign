@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from countersign.extraction import offline
-from countersign.extraction.schema import ExtractedInvoice, FieldFailure, parse_raw
+from countersign.extraction.schema import ExtractedInvoice, FieldFailure, RawInvoice, parse_raw
 from countersign.extraction.validators import validate
 from countersign.intake import Intake, read
 
@@ -21,6 +21,9 @@ from countersign.intake import Intake, read
 class ExtractionOutcome:
     intake: Intake
     invoice: ExtractedInvoice | None = None
+    #: What the reader returned, kept even when it was rejected. Never used to
+    #: clear anything; only to hold other invoices on the same order for review.
+    raw: RawInvoice | None = None
     failures: list[FieldFailure] = field(default_factory=list)
     provider: str = offline.NAME
     version: str = offline.VERSION
@@ -43,14 +46,15 @@ def extract_document(path: Path, *, validators: bool = True) -> ExtractionOutcom
     if not intake.readable:
         return ExtractionOutcome(intake=intake)
 
-    parsed = parse_raw(offline.extract(intake))
+    raw = offline.extract(intake)
+    parsed = parse_raw(raw)
     if not parsed.ok:
-        return ExtractionOutcome(intake=intake, failures=parsed.failures)
+        return ExtractionOutcome(intake=intake, failures=parsed.failures, raw=raw)
 
     if validators:
         failures = validate(parsed.invoice)
         if failures:
-            return ExtractionOutcome(intake=intake, failures=failures)
+            return ExtractionOutcome(intake=intake, failures=failures, raw=raw)
 
     version = offline.VERSION + ("+validators" if validators else "")
-    return ExtractionOutcome(intake=intake, invoice=parsed.invoice, version=version)
+    return ExtractionOutcome(intake=intake, invoice=parsed.invoice, version=version, raw=raw)
